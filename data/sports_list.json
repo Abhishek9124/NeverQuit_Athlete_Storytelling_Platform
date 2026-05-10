@@ -1,0 +1,12 @@
+{
+  "priority_1": ["Cricket","Wrestling","Shooting","Archery","Boxing","Badminton","Athletics","Weightlifting","Swimming","Para Swimming"],
+  "priority_2": ["Table Tennis","Gymnastics","Football","Tennis","Hockey","Judo","Cycling","Kabaddi","Blind Cricket","Mountaineering","Chess"],
+  "priority_3": ["Volleyball","Squash","Rowing","Sailing","Equestrian","Fencing","Taekwondo","Triathlon","Boccia","Goalball","Sitting Volleyball","Wheelchair Basketball","Wheelchair Racing"],
+  "seed_athletes": [
+    {"name": "Sheetal Devi", "sport": "Para Archery", "country": "India"},
+    {"name": "Devendra Jhajharia", "sport": "Para Athletics", "country": "India"},
+    {"name": "Mariyappan Thangavelu", "sport": "Para High Jump", "country": "India"},
+    {"name": "Avani Lekhara", "sport": "Para Shooting", "country": "India"},
+    {"name": "Sumit Antil", "sport": "Para Javelin", "country": "India"}
+  ]
+}

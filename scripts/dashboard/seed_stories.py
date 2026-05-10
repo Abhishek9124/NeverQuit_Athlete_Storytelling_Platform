@@ -1,0 +1,203 @@
+"""Pre-written 'demo' stories that render before the AI pipeline has produced
+any real ones. Each follows the same 10-section template the AI uses.
+
+These exist so first-time visitors see a real, vivid story — not an empty page.
+Once you publish AI-generated stories, these are still browsable but no longer
+take the featured slot on the home page.
+"""
+
+SEED_STORIES = {
+    "_seed_sheetal": {
+        "story_id": "_seed_sheetal",
+        "athlete_name": "Sheetal Devi",
+        "sport": "Para Archery",
+        "country": "India",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Sheetal_Devi_Indian_Paralympic_Archer.jpg/640px-Sheetal_Devi_Indian_Paralympic_Archer.jpg",
+        "status": "published",
+        "is_seed": True,
+        "sections": {
+            "hook": "Sheetal Devi draws a bow with her feet. This is not a metaphor. She lies on her back on the shooting platform, grips the riser with one foot, hooks the string with the other, and releases — and the arrow flies with a precision that makes Paralympic judges double-check the scoreboard.",
+            "world_came_from": "She was born in 2007 in Loi Dhar, a small village in the Kishtwar district of Jammu and Kashmir, where the mountains close the roads in winter and the nearest big city is hours away by bus. Her family had no money for sports training. Sheetal was born with phocomelia — a condition that meant she had no arms. The question of what a girl with no arms would do with her life had no comfortable answer in her village.",
+            "darkest_moment": "For the first decade of her life, the answer offered to her was: nothing much. Her family was told to expect a limited future — that she would need help dressing, eating, going to school. She was carried places. Doctors who saw her early on said prosthetics weren't viable for her. School was difficult. The village had no facilities. Most days she watched other children run, climb, throw — and understood, before anyone said it out loud, that she was supposed to sit still.",
+            "turning_point": "In 2021, the Indian Army's Rashtriya Rifles ran a youth event in Kishtwar. Sheetal was 14. She walked in — on her own, without assistance, carrying herself with that very straight spine she has — and someone noticed. Coach Abhilasha Choudhary watched her for ten minutes and said, 'She had the stillness. Most beginners are all movement. She was completely still.' That stillness, the coach told reporters later, cannot be taught.",
+            "the_grind": "There was no manual. No coach had ever trained someone to draw a bow with their feet at the elite level. Sheetal and her coaches had to invent every drill from scratch. She trained in a custom-built chair that locked her hip in place. She practiced six hours a day, often more. She failed at almost every technique attempted in the first six months. She rebuilt her core strength three times. She missed targets by entire metres. And she stayed. Day after day. The technique that exists today — the one she uses to hit ten-rings at sixty metres — was invented over three years, by her, on a remote training ground in J&K, while almost nobody was watching.",
+            "pull_quote": "People ask me how I aim without hands. I tell them — with my mind first. The feet are just the last step in a thought that started much earlier.",
+            "comeback_timeline": [
+                {"year": 2007, "event": "Born in Loi Dhar, Kishtwar, J&K, with phocomelia — no arms."},
+                {"year": 2021, "event": "Spotted at an Indian Army youth camp at age 14. Picks up a bow for the first time."},
+                {"year": 2022, "event": "Begins formal coaching at the Mata Vaishno Devi Shrine Board Sports Complex."},
+                {"year": 2023, "event": "Gold at the Asian Para Games — three medals, including a world record. Becomes the youngest international para-archery champion."},
+                {"year": 2024, "event": "Bronze at the Paris Paralympics in mixed team compound. Featured in TIME's most influential teens list."},
+            ],
+            "lessons": [
+                "When there is no manual for what you're trying to do, you get to write it. That is power, not disadvantage.",
+                "Stillness under pressure is cultivated long before the moment it's needed. Build it on ordinary days.",
+                "The right room finds the right person. Keep showing up — even when no one is looking.",
+            ],
+            "goal_box_prompt": "What's the thing you've been told you can't do — and what would the first ten minutes of attempting it look like?",
+            "whatsapp_share": "She has no arms. She holds the bow with her feet. At 17, Sheetal Devi made the Paris Paralympic podium for India. Send this to someone who needs to read it today.",
+        },
+    },
+
+    "_seed_arunima": {
+        "story_id": "_seed_arunima",
+        "athlete_name": "Arunima Sinha",
+        "sport": "Mountaineering",
+        "country": "India",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Mrs_Arunima_Sinha_at_BNI_summit.jpg/640px-Mrs_Arunima_Sinha_at_BNI_summit.jpg",
+        "status": "published",
+        "is_seed": True,
+        "sections": {
+            "hook": "On 11 April 2011, Arunima Sinha was thrown from a moving train by robbers who wanted her gold chain. She landed on the next track. A train coming the other way ran over her left leg. She lay there for hours, conscious, watching her own blood pool around her, before anyone found her.",
+            "world_came_from": "She had grown up in Ambedkar Nagar in Uttar Pradesh. Her father, a soldier, died when she was three. Her mother raised her on a small government salary. Arunima played volleyball for the state and was on her way to a national CISF interview when the attack happened. She was 24 years old. Two days later, in a small district hospital with no anaesthetic, surgeons amputated her leg below the knee.",
+            "darkest_moment": "She woke up to find she had become a national news story — and not the kind anyone wants to be. There were rumours she had jumped from the train. There were tabloid debates about whether she was lying. Strangers came to her hospital bed and stared. She lay there with a missing leg, a steel rod through her good one, and the slow understanding that her volleyball career was over before it had begun. She was 24, in pain, and people were calling her a liar.",
+            "turning_point": "In the AIIMS hospital ward, weeks later, she watched a television clip about Bachendri Pal — the first Indian woman to summit Everest. Lying in bed, a single thought arrived: I want to climb the highest mountain in the world. She mentioned it to a nurse. The nurse laughed. She mentioned it to a doctor. The doctor told her to focus on walking first. She wrote to Bachendri Pal anyway. Bachendri wrote back: come and train.",
+            "the_grind": "For two years she trained at the Tata Steel Adventure Foundation in Jamshedpur — running stairs with her prosthetic leg, learning to ice-climb, learning to breathe at altitude. Her stump bled regularly. The prosthetic, designed for walking, was not designed for crampons. Every step on a glacier was a recalibration. She trained in Uttarkashi, then in Ladakh. She did Island Peak in Nepal as a rehearsal — at 6,189 metres. Then, in May 2013, she stood at Everest base camp, looked up, and started walking.",
+            "pull_quote": "When you decide what you want, the universe arranges itself around the decision. You just have to keep walking until your body believes you mean it.",
+            "comeback_timeline": [
+                {"year": 1988, "event": "Born in Ambedkar Nagar, Uttar Pradesh."},
+                {"year": 2011, "event": "Pushed from a moving train by robbers. Loses her left leg."},
+                {"year": 2011, "event": "Decides, in a hospital bed weeks later, to climb Everest."},
+                {"year": 2013, "event": "Summits Mount Everest — first female amputee in history to do so."},
+                {"year": 2019, "event": "Summits Mount Vinson in Antarctica — completing the Seven Summits."},
+            ],
+            "lessons": [
+                "The best moment to declare an impossible goal is the day everyone tells you it's over. The disbelief becomes the fuel.",
+                "Pain is not the opposite of progress. Often it is the receipt for it.",
+                "Find the one person who has done what you want to do, and write to them. Most people will write back.",
+            ],
+            "goal_box_prompt": "If you were lying in a hospital bed today, what would you decide to do — and how would you start tomorrow morning?",
+            "whatsapp_share": "Pushed off a moving train. Lost her leg. Two years later Arunima Sinha was on top of Everest — the first female amputee to do it. Send this to someone who needs it.",
+        },
+    },
+
+    "_seed_mariyappan": {
+        "story_id": "_seed_mariyappan",
+        "athlete_name": "Mariyappan Thangavelu",
+        "sport": "Para High Jump",
+        "country": "India",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Mariyappan_Thangavelu_-_3_-_Cropped.jpg/640px-Mariyappan_Thangavelu_-_3_-_Cropped.jpg",
+        "status": "published",
+        "is_seed": True,
+        "sections": {
+            "hook": "On the way to school in Salem, Tamil Nadu, a five-year-old boy was hit by a drunk bus driver. The bus crushed his right leg below the knee. The doctors told his mother — a vegetable seller raising five children alone — that her son might never walk normally again. Twenty-one years later, that boy stood on the top step of the Olympic podium in Rio.",
+            "world_came_from": "Mariyappan's mother, Saroja, sold vegetables in the local market. His father had left. There was barely money for food, let alone surgery or therapy. The accident — a school bus on a routine morning — would have ended most stories there. Instead, the family stitched something together. Saroja worked harder. Mariyappan went back to school on a leg that didn't quite work.",
+            "darkest_moment": "Through his school years he was the boy with the limp. He was excluded from games. Teachers wrote him off. By age fourteen he was so used to being told what he couldn't do that he barely heard it any more. There was a moment, he later said, when he understood that the way the world saw him — as someone with a damaged leg — would be the way he saw himself, unless he changed it himself. No one was coming to help.",
+            "turning_point": "His PE teacher, a man named Sathyanarayanan, watched him win a school volleyball match on one good leg and one ruined one — and saw something other coaches had missed. He told Mariyappan: 'Try high jump.' It was a sport that, on paper, demanded everything Mariyappan didn't have. But Sathyanarayanan thought the asymmetry might actually be useful — that a strong takeoff leg matters more than a balanced one. He was right.",
+            "the_grind": "By 2013 Mariyappan was training under Satyanarayana, the senior coach in Bengaluru. Six hours a day. Sleeping at the training centre. Working on a single thing — the explosive moment when his good leg leaves the ground. He missed competitions because he couldn't afford the train fare. He won a national title and the prize money paid for his next year of training. He built his career one tournament at a time, on a single working leg.",
+            "pull_quote": "The leg that hurt me when I was five is now the leg I push off from. The thing that broke me is the thing that lifts me.",
+            "comeback_timeline": [
+                {"year": 1995, "event": "Born in Periavadagampatti, near Salem, Tamil Nadu."},
+                {"year": 2000, "event": "Hit by a drunk bus driver on the way to school. Right leg permanently damaged."},
+                {"year": 2013, "event": "Joins the senior India para-athletics camp in Bengaluru."},
+                {"year": 2016, "event": "Gold at the Rio Paralympics in T42 high jump — second Indian Paralympic gold ever."},
+                {"year": 2020, "event": "Silver at Tokyo Paralympics. Awarded Padma Shri."},
+                {"year": 2024, "event": "Bronze at Paris Paralympics — first Indian para-athlete to medal in three consecutive Games."},
+            ],
+            "lessons": [
+                "What you see as a weakness is sometimes a specialisation in disguise. Look harder at the asymmetry before you compensate for it.",
+                "One teacher who actually pays attention is enough to change a life. Be that teacher when you can.",
+                "Stack small tournaments. The big stage is just a series of small stages with better lighting.",
+            ],
+            "goal_box_prompt": "Where in your life are you compensating for what you think is a weakness — when it might actually be your edge?",
+            "whatsapp_share": "His leg was crushed by a drunk bus driver when he was five. Twenty-one years later he stood on the Olympic podium with gold around his neck. Send this to someone who needs it.",
+        },
+    },
+
+    "_seed_devendra": {
+        "story_id": "_seed_devendra",
+        "athlete_name": "Devendra Jhajharia",
+        "sport": "Para Javelin",
+        "country": "India",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Devendra_Jhajharia_2020_Paralympic_Games.jpg/640px-Devendra_Jhajharia_2020_Paralympic_Games.jpg",
+        "status": "published",
+        "is_seed": True,
+        "sections": {
+            "hook": "An eight-year-old boy in a Rajasthan village climbed a tree to pluck a fruit. He grabbed a branch, the branch sagged, and his hand closed around an 11,000-volt power line that ran through it. He fell, awake. By the time the doctors stopped working on him, his left arm — from the shoulder down — was gone.",
+            "world_came_from": "Devendra was born in 1981 in Churu, in the dry north of Rajasthan. His family farmed. He went to a government school. The accident — at age eight — should have ended any sporting future. Instead, his coach in school asked him: which arm do you throw with? When he answered 'right,' the coach said: 'Then nothing about you has changed. Get up.'",
+            "darkest_moment": "There was no para-athletics infrastructure in Rajasthan in the 1990s. Devendra trained in a public park, with sticks for javelins, with nobody who could tell him whether his technique was correct. He won state-level able-bodied competitions and was told he didn't qualify for prize money because of his missing arm. He competed in three categories — and was excluded from all three at different times by different officials. He kept turning up.",
+            "turning_point": "In 2002, the Sports Authority of India coach R.D. Singh saw him throw at the Punjab Open. Within a year he was at the SAI centre in Gandhinagar. R.D. Singh restructured his entire technique — the run-up, the release angle, the rotation — to compensate for the missing arm. The new technique took eighteen months to learn. The first time he used it in competition, he set a world record.",
+            "the_grind": "Through the 2000s, Devendra kept training while his sport refused to take him seriously. He was on a tiny stipend. He had a job at the Indian Railways that he would have to leave every time he travelled to compete. His wife — a national-level kabaddi player — supported the family during competition seasons. He kept the same coach, the same technique, the same farm-strong shoulder, for two decades. Other athletes came and went. He stayed.",
+            "pull_quote": "I lost an arm at eight. I didn't lose anything else. The arm I have left is the arm I have always used. Nothing was ever taken from me.",
+            "comeback_timeline": [
+                {"year": 1981, "event": "Born in Churu, Rajasthan."},
+                {"year": 1989, "event": "Loses left arm to an 11,000-volt power line at age eight."},
+                {"year": 2004, "event": "Gold at Athens Paralympics. World record. India's first Paralympic individual gold in 32 years."},
+                {"year": 2016, "event": "Gold at Rio Paralympics. Breaks his own world record."},
+                {"year": 2020, "event": "Silver at Tokyo Paralympics. Awarded Padma Bhushan, India's third highest civilian award."},
+            ],
+            "lessons": [
+                "The story you tell yourself about what you lost determines what you do with what you have left. Tell it carefully.",
+                "Find one coach who will rebuild your fundamentals from scratch — and trust them for years, not weeks.",
+                "Stay in the room. Most people who outlast their competition just refused to leave.",
+            ],
+            "goal_box_prompt": "What story have you been telling yourself about something you lost — and what would happen if you told a different one?",
+            "whatsapp_share": "An eight-year-old in Rajasthan touched a live wire and lost his arm. He kept throwing. Two Paralympic golds. Two world records. Send this to someone who needs to read it today.",
+        },
+    },
+
+    "_seed_avani": {
+        "story_id": "_seed_avani",
+        "athlete_name": "Avani Lekhara",
+        "sport": "Para Shooting",
+        "country": "India",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Avani_Lekhara_at_Paris_2024.jpg/640px-Avani_Lekhara_at_Paris_2024.jpg",
+        "status": "published",
+        "is_seed": True,
+        "sections": {
+            "hook": "She was eleven when the car crashed. When she woke up in hospital, she was told she would never walk again. For two years she barely left her bed. For two years she barely spoke. Then her father put a 10-metre air rifle in her hands — and the world finally got quiet.",
+            "world_came_from": "Avani was born in Jaipur in 2001 to a comfortable, educated family. Her father was a senior officer in the Rajasthan Revenue Service. She was a bright student, a competitive child, fascinated by science. The car accident in 2012 happened on a family trip. The damage to her spinal cord — at the eleventh thoracic vertebra — was permanent.",
+            "darkest_moment": "The first two years after the accident were close to lost. She withdrew from school. She wouldn't see friends. She wouldn't go to therapy with any energy. Her parents tried sport after sport — swimming, archery — and she went through the motions and nothing took. She was slipping into a depression that her family did not know how to pull her out of.",
+            "turning_point": "Her father, Praveen Lekhara, brought her a copy of Abhinav Bindra's autobiography — the Indian shooter who had won an Olympic gold in 2008. She read it cover to cover. Then she said: I want to try shooting. They went to a local range in Jaipur. The first time she lifted the rifle, the coach saw her stillness and her concentration and her absolute self-containment, and he understood — before she did — that she had found her sport.",
+            "the_grind": "She trained in Jaipur, then at the national camp in New Delhi. Para-shooting required a different setup — a wheelchair-mounted rest, a different breathing rhythm, total core stillness. She built it. She trained six days a week. She finished school online. She competed first nationally, then internationally, while studying law at the side. By 2020, at age 19, she was the world number one in her event.",
+            "pull_quote": "When I'm aiming, the wheelchair is gone. The accident is gone. There is just me and the target and the next breath.",
+            "comeback_timeline": [
+                {"year": 2001, "event": "Born in Jaipur, Rajasthan."},
+                {"year": 2012, "event": "Car accident at age 11. Permanent spinal cord injury. Paraplegic."},
+                {"year": 2015, "event": "Picks up a rifle for the first time at a Jaipur range."},
+                {"year": 2021, "event": "Gold at the Tokyo Paralympics in 10m air rifle. First Indian woman to win a Paralympic gold."},
+                {"year": 2024, "event": "Defends her gold at the Paris Paralympics. Awarded Padma Shri."},
+            ],
+            "lessons": [
+                "Depression doesn't lift on schedule. It lifts when something gives you a reason to look outward again. Find that reason — even if you have to try ten things first.",
+                "Read the autobiography of someone who did the thing you want to do. Books still change lives.",
+                "Stillness is a skill. The world rewards people who can be quiet under pressure.",
+            ],
+            "goal_box_prompt": "What's one book about someone who did what you want to do — that you could finish this week?",
+            "whatsapp_share": "Spinal cord injury at eleven. Two years of depression. Then a rifle, and then the Tokyo Paralympic podium. Avani Lekhara — first Indian woman to win Paralympic gold.",
+        },
+    },
+
+    "_seed_murlikant": {
+        "story_id": "_seed_murlikant",
+        "athlete_name": "Murlikant Petkar",
+        "sport": "Para Swimming",
+        "country": "India",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Petkar_Murlikant_Rajaram_-_Indian_Paralympic_swimmer_-_2018_%28cropped%29.jpg/640px-Petkar_Murlikant_Rajaram_-_Indian_Paralympic_swimmer_-_2018_%28cropped%29.jpg",
+        "status": "published",
+        "is_seed": True,
+        "sections": {
+            "hook": "Polio at age one. Nine bullets in his body in the 1965 India-Pakistan war. A truck ran him over while he was on a stretcher. The doctors stopped counting the things wrong with him. Eight years later, he gave India its very first Paralympic gold medal — and broke the world record while doing it.",
+            "world_came_from": "Murlikant was born in 1944 in Peth Islampur, Maharashtra, into a family of farmers. Polio struck before his second birthday. He grew up with a partially weakened body, learning to compensate, joining the army at 17 because the army was a way out of the village. He fought wrestling and boxing tournaments at the cantonment. By 21 he was a soldier and a competitive boxer — until the war.",
+            "darkest_moment": "On 26 September 1965, near Sialkot, Pakistani machine gun fire opened on his unit. Nine bullets struck Murlikant — in the chest, the spine, the leg. He fell. A military truck reversing in the chaos drove over him. He was paralysed from the waist down. A bullet remained lodged near his spine for the rest of his life. He spent the next two years in a military hospital in Pune, learning to live in a wheelchair. Most of the friends he had served with were dead.",
+            "turning_point": "In hospital rehab, a doctor suggested swimming — for the lung capacity, for the upper body strength, for something to do. Murlikant had never swum. He learned in the rehab pool. Within months, he was beating the rehab nurses' best times. The Telco Sports Club in Pune took him on. By 1968, he was at the Paralympics in Tel Aviv — fighting for India in three sports.",
+            "the_grind": "Through the late 60s and early 70s, Murlikant trained alone. Para-sports in India had no funding, no coaches, no federations. He swam in the same Pune pool every morning. He weight-trained with bricks. He competed in javelin and precision archery on weekends because it was harder to specialise when you had to fund yourself. He held down a Telco factory job and trained around the shifts. By 1972, going into the Heidelberg Paralympics, he was 28 years old, eight years into a wheelchair, and still no one outside his small circle in Pune knew his name.",
+            "pull_quote": "I have lived with bullets in my body for sixty years. The body adjusts to almost anything if you give it a reason to.",
+            "comeback_timeline": [
+                {"year": 1944, "event": "Born in Peth Islampur, Maharashtra. Contracts polio at age one."},
+                {"year": 1965, "event": "Shot nine times during the India-Pakistan war. Paralysed."},
+                {"year": 1968, "event": "Competes at the Tel Aviv Paralympics in three sports."},
+                {"year": 1972, "event": "Wins gold at the Heidelberg Paralympics in 50m freestyle swimming. World record. India's first Paralympic gold."},
+                {"year": 2018, "event": "Awarded Padma Shri, India's fourth highest civilian honour."},
+                {"year": 2024, "event": "His life portrayed in the film 'Chandu Champion', introducing his story to a new generation."},
+            ],
+            "lessons": [
+                "Don't wait for infrastructure. Train in whatever pool, gym, or street you have. The infrastructure shows up later — for the people who didn't wait.",
+                "Multi-discipline early. Specialisation can wait until someone is paying you to specialise.",
+                "Some people only get recognised forty years after they did the work. Do the work anyway.",
+            ],
+            "goal_box_prompt": "What would you start training for tonight if you stopped waiting for the right facilities, the right coach, or the right time?",
+            "whatsapp_share": "Polio at one. Nine bullets in the 1965 war. Eight years later, India's first Paralympic gold — in a world record. Murlikant Petkar's story. Send this to someone who needs it.",
+        },
+    },
+}

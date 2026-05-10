@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:380px;margin:80px auto;padding:24px;border:0.5px solid var(--color-border-tertiary);border-radius:12px;">
+  <h2 style="font-size:18px;font-weight:500;margin-bottom:6px;">Admin sign-in required</h2>
+  <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:14px;">Enter the admin token configured in your <code>.env</code>.</p>
+  <form method="post" action="/admin/login" style="display:flex;flex-direction:column;gap:10px;">
+    <input type="password" name="token" placeholder="Admin token" autofocus>
+    <button class="btn-orange" type="submit">Sign in</button>
+  </form>
+</div>
+{% endblock %}

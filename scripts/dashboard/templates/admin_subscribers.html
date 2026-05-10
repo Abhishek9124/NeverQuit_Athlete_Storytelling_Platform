@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block tab_admin %}active{% endblock %}
+{% block title %}Subscribers · {{ site }}{% endblock %}
+{% block content %}
+<style>
+.s-wrap{max-width:1100px;margin:0 auto;padding:32px 24px 60px;}
+.s-h1{font-size:24px;font-weight:500;margin-bottom:6px;}
+.s-h1 span{color:#D85A30;}
+.s-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:22px;}
+.s-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px;}
+.s-stat{background:#fff;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:18px 20px;}
+.s-stat-n{font-family:Georgia,serif;font-size:32px;font-weight:500;color:#1a1a1a;}
+.s-stat-l{font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-top:2px;}
+
+.s-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;}
+@media(max-width:900px){.s-grid{grid-template-columns:1fr;}}
+.s-card{background:#fff;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;}
+.s-card-h{padding:14px 18px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;background:var(--color-background-secondary);}
+.s-card-title{font-size:13px;font-weight:500;}
+.s-card-body{padding:14px 18px;}
+
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{text-align:left;padding:10px 12px;border-bottom:0.5px solid var(--color-border-tertiary);}
+th{font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;font-weight:600;background:var(--color-background-secondary);}
+tr:hover td{background:#FFFCF8;}
+.email-tag{font-family:'SF Mono',Menlo,Consolas,monospace;font-size:12px;}
+.src-pill{font-size:9px;padding:2px 7px;border-radius:20px;background:#FAECE7;color:#712B13;text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+.unsub{opacity:.4;text-decoration:line-through;}
+
+textarea{width:100%;min-height:140px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;}
+textarea:focus{border-color:#D85A30;outline:none;}
+
+.add-form{display:flex;gap:6px;}
+.add-form input{flex:1;}
+.empty-row{padding:24px;text-align:center;color:var(--color-text-tertiary);font-size:13px;}
+</style>
+
+<div class="s-wrap">
+  <div class="s-h1">Subscribers <span>&amp; broadcast</span></div>
+  <div class="s-sub">Manage your newsletter list and send updates to all subscribers at once.</div>
+
+  <div class="s-stats">
+    <div class="s-stat"><div class="s-stat-n">{{ total }}</div><div class="s-stat-l">Active subscribers</div></div>
+    <div class="s-stat"><div class="s-stat-n">{{ subscribers|length }}</div><div class="s-stat-l">Total ever</div></div>
+    <div class="s-stat"><div class="s-stat-n">{{ broadcasts|length }}</div><div class="s-stat-l">Broadcasts sent</div></div>
+    <div class="s-stat"><a href="/admin/subscribers/export" class="btn btn-ghost" style="margin-top:6px;">⬇ Export CSV</a></div>
+  </div>
+
+  <div class="s-grid">
+
+    {# ---- LEFT: subscribers ---- #}
+    <div class="s-card">
+      <div class="s-card-h">
+        <div class="s-card-title">Subscribers</div>
+        <span style="font-size:11px;color:var(--color-text-tertiary);">{{ total }} active</span>
+      </div>
+      <div class="s-card-body" style="padding:0;">
+        <table>
+          <thead><tr><th>Email</th><th>Source</th><th>Joined</th><th></th></tr></thead>
+          <tbody>
+            {% for s in subscribers %}
+            <tr class="{% if s.unsubscribed %}unsub{% endif %}">
+              <td class="email-tag">{{ s.email }}</td>
+              <td><span class="src-pill">{{ s.source or '—' }}</span></td>
+              <td style="color:var(--color-text-tertiary);font-size:12px;">{{ s.created_at[:10] }}</td>
+              <td style="text-align:right;">
+                {% if not s.unsubscribed %}
+                <form method="post" action="/admin/subscribers/remove" style="display:inline;">
+                  <input type="hidden" name="email" value="{{ s.email }}">
+                  <button class="btn btn-ghost" style="height:26px;padding:0 10px;font-size:11px;" type="submit">Unsubscribe</button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="empty-row">No subscribers yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="s-card-h" style="border-top:0.5px solid var(--color-border-tertiary);border-bottom:none;">
+        <form method="post" action="/admin/subscribers/add" class="add-form" style="width:100%;">
+          <input type="email" name="email" placeholder="Add subscriber by email…" required>
+          <button class="btn btn-orange" type="submit">Add</button>
+        </form>
+      </div>
+    </div>
+
+    {# ---- RIGHT: broadcast composer + history ---- #}
+    <div>
+      <div class="s-card" style="margin-bottom:16px;">
+        <div class="s-card-h">
+          <div class="s-card-title">📣 Send a broadcast</div>
+          <span style="font-size:11px;color:var(--color-text-tertiary);">to {{ total }} subscribers</span>
+        </div>
+        <div class="s-card-body">
+          <form method="post" action="/admin/broadcast" style="display:flex;flex-direction:column;gap:10px;">
+            <input type="text" name="subject" placeholder="Subject — e.g. New story: Sheetal Devi's gold" required>
+            <textarea name="body" placeholder="Write your update… plain text, line breaks become paragraphs." required></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;color:var(--color-text-tertiary);">{% if not (request.headers.get('X-Mailchimp-Set') or true) %}Configure <code>MAILCHIMP_API_KEY</code> in <code>.env</code> to actually send.{% else %}Logged + Mailchimp.{% endif %}</span>
+              <button class="btn btn-orange" type="submit">Send to all</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="s-card">
+        <div class="s-card-h"><div class="s-card-title">Broadcast history</div></div>
+        <div class="s-card-body" style="padding:0;">
+          <table>
+            <thead><tr><th>Subject</th><th>Sent</th><th>Date</th></tr></thead>
+            <tbody>
+              {% for b in broadcasts %}
+              <tr>
+                <td style="font-weight:500;">{{ b.subject }}</td>
+                <td><span class="src-pill" style="background:#E1F5EE;color:#085041;">{{ b.sent_to }}</span>{% if b.failures %} <span class="src-pill" style="background:#FEE2E2;color:#9B1C1C;">{{ b.failures }} fail</span>{% endif %}</td>
+                <td style="color:var(--color-text-tertiary);font-size:12px;">{{ b.created_at[:10] }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" class="empty-row">No broadcasts yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

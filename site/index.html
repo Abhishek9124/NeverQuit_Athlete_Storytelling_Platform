@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NeverQuit — They were told it's over. Read what happened next.</title>
+<style>
+:root{
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-serif:Georgia,"Times New Roman",serif;
+  --color-text-primary:#1a1a1a;
+  --color-text-secondary:#525252;
+  --color-text-tertiary:#8a8a8a;
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#f7f6f3;
+  --color-border-secondary:#d4d4d4;
+  --color-border-tertiary:#e8e6e1;
+  --border-radius-md:8px;
+  --border-radius-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);color:var(--color-text-primary);background:var(--color-background-primary);}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);position:sticky;top:0;z-index:10;}
+.logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:500;}
+.logo-icon{width:28px;height:28px;background:#D85A30;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.logo-icon svg{width:16px;height:16px;fill:#FAECE7;}
+.nav-tabs{display:flex;gap:2px;background:var(--color-background-secondary);border-radius:10px;padding:3px;}
+.tab{font-size:12px;padding:5px 12px;border-radius:7px;cursor:pointer;color:var(--color-text-secondary);border:none;background:transparent;font-family:inherit;}
+.tab.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border:0.5px solid var(--color-border-tertiary);}
+.page{display:none;}
+.page.active{display:block;}
+.hero{padding:36px 20px 28px;border-bottom:0.5px solid var(--color-border-tertiary);}
+.hero-eyebrow{font-size:11px;font-weight:500;color:#993C1D;background:#FAECE7;padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:12px;}
+.hero-h1{font-size:28px;font-weight:500;line-height:1.3;margin-bottom:8px;}
+.hero-h1 span{color:#D85A30;}
+.hero-sub{font-size:14px;color:var(--color-text-secondary);line-height:1.6;max-width:460px;margin-bottom:18px;}
+.search-wrap{display:flex;gap:8px;max-width:440px;margin-bottom:16px;}
+.search-wrap input{flex:1;height:38px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);padding:0 14px;font-size:13px;color:var(--color-text-primary);outline:none;font-family:inherit;}
+.search-wrap input::placeholder{color:var(--color-text-tertiary);}
+.btn-orange{height:38px;padding:0 18px;background:#D85A30;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;}
+.lang-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.lchip{font-size:11px;padding:3px 10px;border-radius:20px;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);cursor:pointer;background:var(--color-background-primary);}
+.lchip:hover,.lchip.sel{background:#FAECE7;border-color:#F0997B;color:#712B13;}
+.stats-row{display:flex;border-bottom:0.5px solid var(--color-border-tertiary);}
+.stat{flex:1;padding:14px 20px;border-right:0.5px solid var(--color-border-tertiary);text-align:center;}
+.stat:last-child{border-right:none;}
+.stat-n{font-size:20px;font-weight:500;}
+.stat-l{font-size:11px;color:var(--color-text-tertiary);margin-top:2px;}
+.sport-belt{display:flex;gap:8px;padding:12px 20px;border-bottom:0.5px solid var(--color-border-tertiary);overflow-x:auto;flex-wrap:wrap;}
+.sport-chip{font-size:11px;padding:4px 12px;border-radius:20px;border:0.5px solid var(--color-border-tertiary);cursor:pointer;white-space:nowrap;background:var(--color-background-primary);color:var(--color-text-secondary);}
+.sport-chip.on{background:#FAECE7;border-color:#F0997B;color:#712B13;}
+.section-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.06em;text-transform:uppercase;padding:14px 20px 8px;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));border-top:0.5px solid var(--color-border-tertiary);}
+.card{padding:20px;border-bottom:0.5px solid var(--color-border-tertiary);border-right:0.5px solid var(--color-border-tertiary);cursor:pointer;background:var(--color-background-primary);transition:background .12s;}
+.card:hover{background:var(--color-background-secondary);}
+.card-top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;}
+.b-athlete{background:#FAECE7;color:#712B13;}
+.b-para{background:#EEEDFE;color:#3C3489;}
+.b-paralympic{background:#E1F5EE;color:#085041;}
+.b-sport{font-size:10px;color:var(--color-text-tertiary);}
+.comeback-line{height:2px;border-radius:1px;margin-bottom:10px;opacity:.3;}
+.card-title{font-size:14px;font-weight:500;line-height:1.4;margin-bottom:6px;}
+.card-excerpt{font-size:12px;color:var(--color-text-secondary);line-height:1.55;margin-bottom:12px;}
+.card-footer{display:flex;align-items:center;justify-content:space-between;}
+.mini-person{display:flex;align-items:center;gap:6px;}
+.av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;}
+.mini-name{font-size:11px;color:var(--color-text-secondary);}
+.read-t{font-size:10px;color:var(--color-text-tertiary);}
+.ai-bar{padding:14px 20px;background:#FAECE7;border-top:0.5px solid #F0997B;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.ai-bar-text{font-size:13px;color:#712B13;}
+.ai-bar-text strong{font-weight:500;}
+.ai-bar-btn{font-size:12px;padding:6px 14px;background:#D85A30;color:#fff;border:none;border-radius:var(--border-radius-md);cursor:pointer;font-family:inherit;}
+.reader{padding:24px 20px;max-width:780px;margin:0 auto;}
+.back{font-size:12px;color:var(--color-text-secondary);background:none;border:none;cursor:pointer;margin-bottom:18px;display:flex;align-items:center;gap:4px;padding:0;font-family:inherit;}
+.r-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.r-title{font-size:22px;font-weight:500;line-height:1.35;margin-bottom:8px;}
+.r-byline{font-size:12px;color:var(--color-text-secondary);display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px;}
+.r-divider{height:0.5px;background:var(--color-border-tertiary);margin-bottom:20px;}
+.r-body{font-size:15px;line-height:1.85;font-family:var(--font-serif);}
+.r-body p{margin-bottom:1.1em;}
+.pullquote{border-left:3px solid #D85A30;padding:12px 16px;margin:20px 0;background:#FAECE7;}
+.pullquote p{font-size:15px;font-weight:500;color:#712B13;font-style:italic;font-family:var(--font-serif);line-height:1.5;margin:0;}
+.tl-box,.takeaway-box,.goal-box,.share-box{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px 18px;margin:20px 0;}
+.box-title{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.tl-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.tl-yr{font-size:11px;font-weight:500;color:var(--color-text-secondary);min-width:34px;margin-top:2px;}
+.tl-txt{font-size:12px;color:var(--color-text-primary);line-height:1.5;}
+.tk-row{display:flex;gap:8px;font-size:12px;color:var(--color-text-primary);margin-bottom:7px;align-items:flex-start;line-height:1.5;}
+.tk-dot{width:6px;height:6px;border-radius:50%;background:#D85A30;margin-top:5px;flex-shrink:0;}
+.goal-input-row{display:flex;gap:8px;margin-top:10px;}
+.goal-input-row input{flex:1;height:34px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:0 10px;font-size:12px;background:var(--color-background-primary);color:var(--color-text-primary);outline:none;font-family:inherit;}
+.goal-input-row button{height:34px;padding:0 14px;background:#D85A30;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:12px;cursor:pointer;font-family:inherit;}
+.share-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.share-btn{font-size:11px;padding:5px 12px;border:0.5px solid var(--color-border-secondary);border-radius:20px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);}
+.share-btn:hover{background:var(--color-background-secondary);}
+.read-progress{height:3px;background:#D85A30;border-radius:2px;margin-bottom:20px;transition:width .3s;}
+.template-section{padding:20px;max-width:780px;margin:0 auto;}
+.tmpl-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:14px;overflow:hidden;}
+.tmpl-header{padding:12px 16px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.tmpl-header-left{display:flex;align-items:center;gap:10px;}
+.tmpl-num{width:24px;height:24px;border-radius:50%;background:#FAECE7;color:#712B13;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tmpl-name{font-size:14px;font-weight:500;}
+.tmpl-sub{font-size:12px;color:var(--color-text-secondary);}
+.tmpl-body{padding:14px 16px;display:none;}
+.tmpl-body.open{display:block;}
+.tmpl-field{margin-bottom:12px;}
+.tmpl-field-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+.tmpl-field-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5;margin-bottom:5px;}
+.tmpl-example{font-size:12px;color:#534AB7;background:#EEEDFE;padding:8px 10px;border-radius:var(--border-radius-md);font-style:italic;line-height:1.5;}
+.chevron{font-size:11px;color:var(--color-text-tertiary);transition:transform .2s;}
+.chevron.open{transform:rotate(90deg);}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;padding:20px;}
+.feat-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;}
+.feat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:16px;}
+.feat-title{font-size:13px;font-weight:500;margin-bottom:5px;}
+.feat-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5;}
+.feat-tag{font-size:10px;margin-top:8px;padding:2px 8px;border-radius:20px;display:inline-block;}
+.ft-free{background:#E1F5EE;color:#085041;}
+.ft-phase2{background:#FAEEDA;color:#633806;}
+.ft-phase3{background:#EEEDFE;color:#3C3489;}
+</style>
+</head>
+<body>
+<div>
+<h2 class="sr-only">NeverQuit — full platform with all features, story template, and reader experience</h2>
+
+<div class="nav">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 16 16"><path d="M8 1C5 1 3 3.5 3 6c0 3.5 5 9 5 9s5-5.5 5-9c0-2.5-2-5-5-5zm0 6.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg></div>
+    NeverQuit
+  </div>
+  <div class="nav-tabs">
+    <button class="tab active" onclick="showPage('home',this)">Home</button>
+    <button class="tab" onclick="showPage('reader',this)">Story reader</button>
+    <button class="tab" onclick="showPage('template',this)">Story template</button>
+    <button class="tab" onclick="showPage('features',this)">All features</button>
+  </div>
+</div>
+
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-eyebrow">Athletes · Para athletes · Olympians · Differently abled</div>
+    <div class="hero-h1">They were told <span>it's over.</span><br>Read what happened next.</div>
+    <div class="hero-sub">True, vivid, detailed stories of real people — athletes, Paralympians, and differently-abled individuals — who refused to stop. In your language.</div>
+    <div class="search-wrap">
+      <input type="text" id="search-inp" placeholder="Search by sport, name, or situation..." oninput="doSearch()"/>
+      <button class="btn-orange">Search</button>
+    </div>
+    <div class="lang-chips">
+      <span class="lchip sel">English</span>
+      <span class="lchip" onclick="this.classList.toggle('sel')">हिंदी</span>
+      <span class="lchip" onclick="this.classList.toggle('sel')">தமிழ்</span>
+      <span class="lchip" onclick="this.classList.toggle('sel')">ಕನ್ನಡ</span>
+      <span class="lchip" onclick="this.classList.toggle('sel')">मराठी</span>
+      <span class="lchip" onclick="this.classList.toggle('sel')">বাংলা</span>
+      <span class="lchip" onclick="this.classList.toggle('sel')">తెలుగు</span>
+      <span class="lchip" onclick="this.classList.toggle('sel')">ગુજરાતી</span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n">248</div><div class="stat-l">Stories</div></div>
+    <div class="stat"><div class="stat-n">34</div><div class="stat-l">Sports</div></div>
+    <div class="stat"><div class="stat-n">8</div><div class="stat-l">Languages</div></div>
+    <div class="stat"><div class="stat-n">91K</div><div class="stat-l">Monthly readers</div></div>
+  </div>
+
+  <div class="sport-belt">
+    <span class="sport-chip on" onclick="filterSport('all',this)">All sports</span>
+    <span class="sport-chip" onclick="filterSport('cricket',this)">Cricket</span>
+    <span class="sport-chip" onclick="filterSport('wrestling',this)">Wrestling</span>
+    <span class="sport-chip" onclick="filterSport('shooting',this)">Shooting</span>
+    <span class="sport-chip" onclick="filterSport('swimming',this)">Swimming</span>
+    <span class="sport-chip" onclick="filterSport('archery',this)">Archery</span>
+    <span class="sport-chip" onclick="filterSport('athletics',this)">Athletics</span>
+    <span class="sport-chip" onclick="filterSport('boxing',this)">Boxing</span>
+    <span class="sport-chip" onclick="filterSport('badminton',this)">Badminton</span>
+    <span class="sport-chip" onclick="filterSport('para',this)">Para sports</span>
+    <span class="sport-chip" onclick="filterSport('paralympics',this)">Paralympics</span>
+    <span class="sport-chip" onclick="filterSport('football',this)">Football</span>
+    <span class="sport-chip" onclick="filterSport('tennis',this)">Tennis</span>
+    <span class="sport-chip" onclick="filterSport('weightlifting',this)">Weightlifting</span>
+  </div>
+
+  <div class="section-label">Featured comebacks</div>
+  <div class="cards-grid" id="cards-grid"></div>
+  <div class="ai-bar">
+    <div class="ai-bar-text"><strong>Feeling like giving up?</strong> Tell us your situation — AI finds the story that matches exactly what you're going through.</div>
+    <button class="ai-bar-btn">Find my story ↗</button>
+  </div>
+</div>
+
+<div id="page-reader" class="page">
+  <div class="reader">
+    <button class="back" onclick="showPage('home',null)">← Back to stories</button>
+    <div class="read-progress" id="read-prog" style="width:72%;"></div>
+    <div class="r-tags">
+      <span class="badge b-para">Para athlete</span>
+      <span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);">Archery</span>
+      <span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);">Paralympics 2024</span>
+      <span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);">6 min read</span>
+    </div>
+    <div class="r-title">She has no arms. She holds the bow with her feet. She won gold.</div>
+    <div class="r-byline">
+      <div class="mini-person"><div class="av" style="background:#FAEEDA;color:#633806;width:28px;height:28px;font-size:10px;">SD</div><span>Sheetal Devi</span></div>
+      <span style="color:var(--color-text-tertiary);">Jammu &amp; Kashmir</span>
+      <span style="color:var(--color-text-tertiary);">Paralympics 2024 · Gold</span>
+    </div>
+    <div class="r-divider"></div>
+    <div class="r-body">
+      <p>Sheetal Devi draws a bow with her feet. This is not a metaphor, not a poetic image, not a figure of speech. She lies on her back on the shooting platform, grips the riser with one foot, hooks the string with the other, and releases — and the arrow flies with a precision that makes judges double-check the scoreboard.</p>
+      <p>She was born without arms. In a small village in the Kishtwar district of Jammu &amp; Kashmir, where the mountains are high and the roads are difficult, she grew up the way millions of Indian children do — in a house where the electricity was not always on, where the world outside felt very far away, and where the question of what a girl with no arms would do with her life had no comfortable answer.</p>
+      <p>The government sports programme that discovered her in 2021 was not looking for archers. It was a general talent identification camp. Sheetal walked in — on her own, without assistance, carrying herself in that particular way she has, spine very straight, chin slightly up — and someone handed her a bow.</p>
+    </div>
+    <div class="pullquote"><p>"People ask me how I aim without hands. I tell them: with my mind first. The feet are just the last step in a thought that started much earlier."</p></div>
+    <div class="r-body">
+      <p>Her coach Kuldeep Vedalankar said later that he knew within ten minutes. "She had the stillness," he told reporters. "Most beginners are all movement. She was completely still. I have trained hundreds of archers. That stillness — it cannot be taught. It either exists or it does not."</p>
+      <p>It took three years to develop her technique. There was no manual. No coach had ever taught a person to draw a bow with their feet. They had to invent every drill, every correction, every method together. She essentially wrote a new chapter of the sport's history from scratch — in a remote district, without famous sponsorships, without the world watching.</p>
+      <p>At the 2024 Paris Paralympics, the world started watching.</p>
+    </div>
+    <div class="tl-box">
+      <div class="box-title">The comeback timeline</div>
+      <div class="tl-row"><div class="tl-dot" style="background:#F0997B;"></div><div class="tl-yr">2006</div><div class="tl-txt">Born in Kishtwar, J&amp;K, without arms — family is told to expect a limited life</div></div>
+      <div class="tl-row"><div class="tl-dot" style="background:#EF9F27;"></div><div class="tl-yr">2021</div><div class="tl-txt">Discovered at a government talent identification camp — picks up a bow for the first time</div></div>
+      <div class="tl-row"><div class="tl-dot" style="background:#EF9F27;"></div><div class="tl-yr">2022</div><div class="tl-txt">First national para archery competition — finishes 3rd, technique still developing</div></div>
+      <div class="tl-row"><div class="tl-dot" style="background:#639922;"></div><div class="tl-yr">2023</div><div class="tl-txt">World Para Archery Championship gold — sets new world record, world takes notice</div></div>
+      <div class="tl-row"><div class="tl-dot" style="background:#639922;"></div><div class="tl-yr">2024</div><div class="tl-txt">Paris Paralympics gold — youngest Indian to win Paralympic gold, global headlines</div></div>
+    </div>
+    <div class="takeaway-box">
+      <div class="box-title">What you can take from Sheetal's story</div>
+      <div class="tk-row"><div class="tk-dot"></div><span>When there is no manual for what you're trying to do, you get to write it. That is power, not disadvantage.</span></div>
+      <div class="tk-row"><div class="tk-dot"></div><span>Stillness under pressure is cultivated long before the moment it's needed. Build it in ordinary days.</span></div>
+      <div class="tk-row"><div class="tk-dot"></div><span>The right programme, camp, or person finding you matters as much as your talent. Keep showing up in new rooms.</span></div>
+      <div class="goal-box" style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;margin-top:14px;">
+        <div class="box-title">Set your own goal from this story</div>
+        <div class="goal-input-row">
+          <input type="text" placeholder="What goal will you commit to today?"/>
+          <button>Get plan ↗</button>
+        </div>
+      </div>
+    </div>
+    <div class="share-box">
+      <div class="box-title">Share this story</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;">Someone you know needs to read this today.</div>
+      <div class="share-btns">
+        <span class="share-btn">WhatsApp ↗</span>
+        <span class="share-btn">Instagram story</span>
+        <span class="share-btn">Copy link</span>
+        <span class="share-btn">Twitter/X</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-template" class="page">
+  <div class="template-section">
+    <div style="margin-bottom:16px;">
+      <div style="font-size:16px;font-weight:500;margin-bottom:4px;">"Into You" newsletter article template</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6;">Reader-first comeback articles with vulnerability before advice, tiny practices, and a warm close. Click each section to see the format, description, and example.</div>
+    </div>
+    <div id="tmpl-list"></div>
+    <div style="margin-top:16px;padding:14px 16px;background:#EEEDFE;border-radius:var(--border-radius-lg);border:0.5px solid #AFA9EC;">
+      <div style="font-size:12px;font-weight:500;color:#3C3489;margin-bottom:6px;">Tone and style notes</div>
+      <div style="font-size:12px;color:#534AB7;line-height:1.6;">Use second person throughout. Keep paragraphs short. Acknowledge real difficulty before advice. No toxic positivity. Make the ask smaller until it can be done in two minutes.</div>
+    </div>
+  </div>
+</div>
+
+<div id="page-features" class="page">
+  <div style="padding:16px 20px 4px;font-size:13px;color:var(--color-text-secondary);line-height:1.6;">Every feature your platform needs — colour-coded by when to build it.</div>
+  <div style="display:flex;gap:8px;padding:8px 20px 4px;flex-wrap:wrap;font-size:11px;">
+    <span style="background:#E1F5EE;color:#085041;padding:2px 8px;border-radius:20px;">Launch now (free)</span>
+    <span style="background:#FAEEDA;color:#633806;padding:2px 8px;border-radius:20px;">Phase 2 (Month 3–6)</span>
+    <span style="background:#EEEDFE;color:#3C3489;padding:2px 8px;border-radius:20px;">Phase 3 (Month 6+)</span>
+  </div>
+  <div class="features-grid" id="feat-grid"></div>
+</div>
+</div>
+
+<script>
+const stories=[
+  {id:1,type:'athlete',sport:'Wrestling',typeLabel:'Athlete',color:'#D85A30',title:'Spine injury at the Olympics. Back on the mat in 14 months.',excerpt:'Deepak was stretchered off in the Olympic quarterfinal. Surgeons said 18 months. He was back training in 14 — and won Commonwealth gold.',person:'Deepak Punia',loc:'Haryana',initials:'DP',avBg:'#E1F5EE',avC:'#085041'},
+  {id:2,type:'para',sport:'Swimming',typeLabel:'Para athlete',color:'#7F77DD',title:'Deaf since birth. National record in swimming at 19.',excerpt:'Meena never heard a starting gun. So she trained herself to feel the vibration through the starting block. At 19, she broke the national para-swimming record.',person:'Meena Krishnan',loc:'Tamil Nadu',initials:'MK',avBg:'#EEEDFE',avC:'#3C3489'},
+  {id:3,type:'paralympic',sport:'Archery',typeLabel:'Paralympic',color:'#1D9E75',title:'No arms. Gold medal in archery. She draws the bow with her feet.',excerpt:'Sheetal Devi was born without arms in a remote village in J&K. She now holds every world record in para archery and is a Paralympic gold medallist.',person:'Sheetal Devi',loc:'J&K',initials:'SD',avBg:'#FAEEDA',avC:'#633806'},
+  {id:4,type:'athlete',sport:'Shooting',typeLabel:'Athlete',color:'#D85A30',title:'Rejected by the army. Won Olympic gold for India.',excerpt:'Abhinav Bindra was told he wasn\'t built for elite sport. He trained alone in a private range, obsessively, for 8 years — and shot India\'s first individual Olympic gold.',person:'Abhinav Bindra',loc:'Punjab',initials:'AB',avBg:'#FAECE7',avC:'#712B13'},
+  {id:5,type:'para',sport:'Athletics',typeLabel:'Para athlete',color:'#7F77DD',title:'Lost her leg to cancer at 16. Climbed Everest at 21.',excerpt:'Arunima Sinha was pushed off a moving train. She lost her leg. Lying in hospital, she decided she would climb the highest mountain in the world.',person:'Arunima Sinha',loc:'Uttar Pradesh',initials:'AS',avBg:'#EEEDFE',avC:'#3C3489'},
+  {id:6,type:'paralympic',sport:'Swimming',typeLabel:'Paralympic',color:'#1D9E75',title:'Polio at 1. Paralympic gold at 24. India\'s first gold ever.',excerpt:'Murlikant Petkar contracted polio as a child, was shot 9 times in the 1965 war, and still came back to win India\'s very first Paralympic gold medal.',person:'Murlikant Petkar',loc:'Maharashtra',initials:'MP',avBg:'#E1F5EE',avC:'#085041'},
+];
+const template=[
+  {num:'01',name:'Headline + subheadline',sub:'Lost/faced challenge, but chose a defiant outcome',desc:'Use the pattern: [Subject] Lost/Faced [Challenge], But [Defiant Action/Outcome]. Add a one-line subheadline that reframes the core lesson.',ex:'"Bethany Hamilton Lost Her Arm, But She Surfed Anyway" / Subheadline: "The comeback starts smaller than confidence: it starts with returning."'},
+  {num:'02',name:'Opening hook',sub:'Start with you, not the subject',desc:'Speak directly to the reader\'s relatable struggle. Name the universal pain point, then end with a reflective bridge question.',ex:'"Where in your life does the fear of being changed show up - and what would one tiny return look like there?"'},
+  {num:'03',name:'Pull quote',sub:'The central tension in one line',desc:'Include a short quote from or about the subject that captures the emotional contradiction of the story.',ex:'"My fear of losing surfing was greater than my fear of sharks."'},
+  {num:'04',name:'Subject story',sub:'Constraints and comeback',desc:'Introduce the real person, age/background, and what they faced. Then list constraints under Physical / Practical, Emotional / Social, and Identity / Internal.',ex:'"Physical / Practical: She had to relearn balance and paddling. Emotional / Social: Everyone could see what had changed. Identity / Internal: She had to find out whether surfer still belonged to her."'},
+  {num:'05',name:'Turning point + outcome',sub:'Quiet decision, tangible result',desc:'Narrate the small stubborn decision, then show the result and broader meaning. The turning point should feel practical, not cinematic.',ex:'"She did not wait to feel fearless. She went back into the water, tried, fell, adjusted, and returned differently."'},
+  {num:'06',name:'Tiny practices, big shifts',sub:'3-4 micro-habits with micro-steps',desc:'Each item has a principle name, one sentence explanation, and a Micro-step readers can do immediately.',ex:'"Return Smaller: Lower the bar until it is possible. Micro-step: Do the first two minutes only."'},
+  {num:'07',name:'Inner reframe',sub:'When it is you vs. you',desc:'Acknowledge the emotional reality. Name the core lie the reader tells themselves, then counter it with the story\'s lesson.',ex:'"The lie says, if I cannot return as my old self, I cannot return at all. The story says returning differently still counts."'},
+  {num:'08',name:'Fuel beats force',sub:'Energy management, not willpower',desc:'Give four body anchors: sleep, light/outdoor exposure, nutrition anchor, and micro-movement. Keep each one immediate and doable.',ex:'"Light reset: Get two minutes of outdoor light before checking your phone."'},
+  {num:'09',name:'Do it in two minutes',sub:'3 visual action cards',desc:'Each card includes an image, a catchy name, and a 1-2 sentence instruction that can be done in two minutes.',ex:'"The Shoe Touch: Put your shoes by the door and stand in them for two breaths. Let starting be the win."'},
+  {num:'10',name:'Closing micro-sections',sub:'Ask, invite, explain, care',desc:'Close with Ask Yourself This, Tell Us We\'ll Cheer, Why This Works, and From Us With Care.',ex:'"Ask yourself this: What is one thing you can return to differently today?"'},
+  {num:'11',name:'Tone notes',sub:'Tender, direct, micro-first',desc:'Use second person throughout. Keep paragraphs short. Put vulnerability before advice. Avoid toxic positivity. Always shrink the ask.',ex:'"You do not have to rebuild your whole life today. You only have to make the next two minutes honest."'},
+];
+const features=[
+  {icon:'📖',title:'Story reader',desc:'Clean, distraction-free reading. Progress bar, estimated read time, serif body font.',tag:'ft-free',phase:'Launch now'},
+  {icon:'🔍',title:'Sport + category filter',desc:'Filter by sport, type (athlete/para/Paralympic), country, year.',tag:'ft-free',phase:'Launch now'},
+  {icon:'🌐',title:'8 Indian languages',desc:'English, Hindi, Tamil, Kannada, Marathi, Bengali, Telugu, Gujarati.',tag:'ft-free',phase:'Launch now'},
+  {icon:'📅',title:'Comeback timeline',desc:'Visual year-by-year breakdown inside every story. The most shared feature.',tag:'ft-free',phase:'Launch now'},
+  {icon:'🎯',title:'Goal-setting box',desc:'Reader sets a personal goal after each story. AI generates a 30-day action plan.',tag:'ft-phase2',phase:'Phase 2'},
+  {icon:'🤖',title:'AI story match',desc:'User describes their struggle, AI finds the most relevant story.',tag:'ft-phase2',phase:'Phase 2'},
+  {icon:'📤',title:'WhatsApp share',desc:'Pre-written share message optimised for WhatsApp.',tag:'ft-free',phase:'Launch now'},
+  {icon:'📸',title:'Instagram story card',desc:'Auto-generated quote card for Instagram stories.',tag:'ft-phase2',phase:'Phase 2'},
+  {icon:'🏅',title:'Sport hub pages',desc:'Each sport has its own page — all cricket, all swimming, etc.',tag:'ft-free',phase:'Launch now'},
+  {icon:'📝',title:'Story submission form',desc:'Athletes or family members submit their story via Google Form.',tag:'ft-free',phase:'Launch now'},
+  {icon:'🔔',title:'Weekly digest email',desc:'One new story every Monday via Mailchimp.',tag:'ft-phase2',phase:'Phase 2'},
+  {icon:'💬',title:'Community comments',desc:'Readers share their own comeback moment.',tag:'ft-phase2',phase:'Phase 2'},
+  {icon:'📊',title:'Reading streak',desc:'Track stories read this week. Gamified motivation.',tag:'ft-phase3',phase:'Phase 3'},
+  {icon:'🎧',title:'Audio narration',desc:'AI-narrated audio version in chosen language.',tag:'ft-phase3',phase:'Phase 3'},
+  {icon:'📱',title:'Mobile app (PWA)',desc:'Install as home screen app. Offline reading.',tag:'ft-phase3',phase:'Phase 3'},
+  {icon:'🤝',title:'Sponsor a story',desc:'Brands like PUMA, JSW, Tata co-present a story.',tag:'ft-phase3',phase:'Phase 3'},
+  {icon:'🏫',title:'School programme',desc:'Teachers assign stories. Students write reflection essays.',tag:'ft-phase3',phase:'Phase 3'},
+  {icon:'🗺️',title:'India stories map',desc:'Tap a state, see athlete stories from that region.',tag:'ft-phase2',phase:'Phase 2'},
+];
+
+function renderCards(list){
+  document.getElementById('cards-grid').innerHTML=list.map(s=>`
+    <div class="card" onclick="showPage('reader',null)">
+      <div class="card-top-row">
+        <span class="badge ${s.type==='athlete'?'b-athlete':s.type==='para'?'b-para':'b-paralympic'}">${s.typeLabel}</span>
+        <span class="b-sport">${s.sport}</span>
+      </div>
+      <div class="comeback-line" style="background:${s.color};"></div>
+      <div class="card-title">${s.title}</div>
+      <div class="card-excerpt">${s.excerpt}</div>
+      <div class="card-footer">
+        <div class="mini-person"><div class="av" style="background:${s.avBg};color:${s.avC};">${s.initials}</div><div class="mini-name">${s.person} · ${s.loc}</div></div>
+        <div class="read-t">6 min</div>
+      </div>
+    </div>
+  `).join('');
+}
+function doSearch(){
+  const q=document.getElementById('search-inp').value.toLowerCase();
+  renderCards(q?stories.filter(s=>s.title.toLowerCase().includes(q)||s.excerpt.toLowerCase().includes(q)||s.person.toLowerCase().includes(q)||s.sport.toLowerCase().includes(q)):stories);
+}
+function filterSport(sp,el){
+  document.querySelectorAll('.sport-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderCards(sp==='all'?stories:stories.filter(s=>s.type===sp||s.sport.toLowerCase()===sp));
+}
+const tmplList=document.getElementById('tmpl-list');
+template.forEach((t,i)=>{
+  const d=document.createElement('div');
+  d.className='tmpl-card';
+  d.innerHTML=`<div class="tmpl-header" onclick="toggleTmpl(${i})"><div class="tmpl-header-left"><div class="tmpl-num">${t.num}</div><div><div class="tmpl-name">${t.name}</div><div class="tmpl-sub">${t.sub}</div></div></div><span class="chevron" id="ch-${i}">▶</span></div><div class="tmpl-body" id="tb-${i}"><div class="tmpl-field"><div class="tmpl-field-label">What to write</div><div class="tmpl-field-desc">${t.desc}</div></div><div class="tmpl-field"><div class="tmpl-field-label">Real example</div><div class="tmpl-example">${t.ex}</div></div></div>`;
+  tmplList.appendChild(d);
+});
+function toggleTmpl(i){const b=document.getElementById('tb-'+i),c=document.getElementById('ch-'+i);b.classList.toggle('open');c.classList.toggle('open');}
+document.getElementById('feat-grid').innerHTML=features.map(f=>`
+  <div class="feat-card">
+    <div class="feat-icon" style="background:var(--color-background-secondary);">${f.icon}</div>
+    <div class="feat-title">${f.title}</div>
+    <div class="feat-desc">${f.desc}</div>
+    <span class="feat-tag ${f.tag}">${f.phase}</span>
+  </div>
+`).join('');
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.remove('active');
+    if(['home','reader','template','features'][i]===id)t.classList.add('active');
+  });
+  if(el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+}
+renderCards(stories);
+</script>
+</body>
+</html>

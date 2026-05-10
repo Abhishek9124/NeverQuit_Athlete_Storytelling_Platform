@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block tab_admin %}active{% endblock %}
+{% block title %}Admin · {{ site }}{% endblock %}
+{% block content %}
+<style>
+.admin-wrap{padding:36px 24px 60px;max-width:1180px;margin:0 auto;}
+.admin-h1{font-family:var(--font-serif);font-size:32px;font-weight:500;letter-spacing:-0.02em;margin-bottom:6px;color:var(--ink);}
+.admin-sub{font-size:14px;color:var(--ink-muted);margin-bottom:18px;}
+
+.model-card{display:flex;align-items:center;gap:12px;background:var(--ink);color:#E8E6DD;padding:12px 16px;border-radius:var(--r-md);margin-bottom:32px;font-size:13px;}
+.model-card code{background:rgba(255,255,255,.08);color:#FFD080;padding:3px 10px;border-radius:6px;font-size:13px;}
+.model-card .lbl{background:var(--green);color:#FFF;padding:3px 10px;border-radius:20px;font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;}
+.model-card .hint{color:#9A988E;margin-left:auto;font-size:12px;}
+
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:36px;}
+.tool-card{background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px;transition:border-color .15s,box-shadow .15s;}
+.tool-card:hover{border-color:var(--line-strong);box-shadow:var(--shadow-sm);}
+.tool-card.featured{background:var(--accent-soft);border-color:#E8C9B5;}
+.tool-title{font-family:var(--font-serif);font-size:17px;font-weight:500;margin-bottom:6px;letter-spacing:-0.01em;color:var(--ink);}
+.tool-desc{font-size:13px;color:var(--ink-muted);margin-bottom:14px;line-height:1.55;}
+.tool-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.tool-form input{flex:1;min-width:140px;}
+
+.section{margin-bottom:36px;}
+.section-h{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-serif);font-size:18px;font-weight:500;margin-bottom:14px;letter-spacing:-0.01em;color:var(--ink);}
+.section-h .meta{font-family:var(--font-sans);font-size:11px;color:var(--ink-faint);font-weight:500;text-transform:uppercase;letter-spacing:.06em;}
+.queue-badge{background:var(--gold-soft);color:var(--gold-deep);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+
+.row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:8px;transition:border-color .15s;}
+.row:hover{border-color:var(--line-strong);}
+.row-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.row-name{font-size:14px;font-weight:500;color:var(--ink);}
+.row-name:hover{color:var(--accent);}
+.row-sport{font-size:12px;color:var(--ink-faint);}
+.empty{padding:24px;color:var(--ink-faint);font-size:13px;text-align:center;border:1px dashed var(--line-strong);border-radius:var(--r-md);background:var(--bg);}
+
+.avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.avatar-fallback{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);color:var(--accent-deep);display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-weight:600;font-size:15px;flex-shrink:0;}
+
+.job-card{background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 20px;margin-bottom:10px;}
+.job-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.job-title{font-family:var(--font-serif);font-size:15px;font-weight:500;letter-spacing:-0.01em;}
+.job-status{font-size:10px;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+.j-running{background:var(--gold-soft);color:var(--gold-deep);}
+.j-done{background:var(--green-soft);color:var(--green);}
+.j-error{background:var(--red-soft);color:var(--red);}
+.job-step{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-muted);padding:4px 0;}
+.s-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.s-running{background:var(--accent);animation:pulse 1.2s infinite;}
+.s-done{background:var(--green);}
+.s-error{background:var(--red);}
+@keyframes pulse{0%{opacity:.4;transform:scale(.8);}50%{opacity:1;transform:scale(1);}100%{opacity:.4;transform:scale(.8);}}
+.s-note{color:var(--ink-faint);font-size:11px;margin-left:4px;}
+</style>
+
+<div class="admin-wrap">
+  <h1 class="admin-h1">Admin console</h1>
+  <p class="admin-sub">Approve stories, run discovery, and trigger the pipeline.</p>
+
+  <div class="model-card" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#C96442 0%,#A8502E 100%);padding:18px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div style="background:rgba(0,0,0,.25);width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;">✍</div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.12em;">Story writer model</div>
+        <div style="font-family:'SF Mono',Menlo,Consolas,monospace;font-size:18px;font-weight:600;color:#FFF;margin-top:2px;">{{ story_model }}</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
+        <span style="background:rgba(0,0,0,.2);color:#FFE5BB;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;">{{ max_tokens }} tokens</span>
+        <span style="background:rgba(0,0,0,.2);color:#FFE5BB;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;">NVIDIA API</span>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);padding:12px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px;border-top:1px solid rgba(255,255,255,.05);">
+      <span style="color:#9A988E;">🔎 Default research:</span>
+      <code style="background:rgba(255,255,255,.08);color:#FFD080;padding:3px 10px;border-radius:6px;">{{ research_model }}</code>
+      <span style="color:#9A988E;margin-left:auto;">Configure via <code style="color:#FFD080;">NVIDIA_STORY_MODEL</code> · <code style="color:#FFD080;">.env</code></span>
+    </div>
+  </div>
+
+  {# ---------- Analytics + nav row ---------- #}
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px;">
+    <a href="/admin/subscribers" style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;text-decoration:none;display:block;transition:border-color .15s;" onmouseover="this.style.borderColor='#D85A30'" onmouseout="this.style.borderColor='var(--line)'">
+      <div style="font-family:Georgia,serif;font-size:24px;font-weight:500;color:#1a1a1a;">{{ analytics.subscribers }}</div>
+      <div style="font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-top:2px;">📨 Subscribers →</div>
+    </a>
+    <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;">
+      <div style="font-family:Georgia,serif;font-size:24px;font-weight:500;color:#1a1a1a;">{{ analytics.total_visits }}</div>
+      <div style="font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-top:2px;">👁 Total visits</div>
+    </div>
+    <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;">
+      <div style="font-family:Georgia,serif;font-size:24px;font-weight:500;color:#1a1a1a;">{{ analytics.today }}</div>
+      <div style="font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-top:2px;">📅 Today</div>
+    </div>
+    <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;">
+      <div style="font-family:Georgia,serif;font-size:24px;font-weight:500;color:#1a1a1a;">{{ analytics.unique_visitors }}</div>
+      <div style="font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-top:2px;">🌍 Unique visitors</div>
+    </div>
+    <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;">
+      <div style="font-family:Georgia,serif;font-size:24px;font-weight:500;color:#1a1a1a;">{{ pending|length }}</div>
+      <div style="font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-top:2px;">⏳ Pending review</div>
+    </div>
+  </div>
+
+  <div class="tools">
+    <div class="tool-card featured">
+      <div class="tool-title">🧠 Research a specific athlete</div>
+      <div class="tool-desc" style="margin-bottom:12px;">Build a research dossier — select your preferred model and review detailed findings with verified facts, then write the full story. ⚡ Fast research (15-30s) · 20k token budget.</div>
+      <div style="font-size:11px;color:var(--ink-faint);margin-bottom:12px;padding:10px;background:var(--bg-mute);border-radius:6px;">
+        <strong style="color:var(--ink-muted);">Models:</strong>
+        <br><span style="color:#34D399;">✓ GPT-OSS</span> (Stories: {{ model_name }}) | <span style="color:#34D399;">✓ NVIDIA</span> (Research)
+      </div>
+      <form method="post" action="/admin/research" class="tool-form" style="flex-wrap:wrap;">
+        <input type="text" name="athlete" placeholder="Athlete name (required)" required>
+        <input type="text" name="sport" placeholder="Sport (optional)" style="max-width:140px;">
+        <select name="model" style="height:36px;border:1px solid var(--line-strong);border-radius:var(--r-md);padding:0 12px;font-size:13px;background:var(--bg-elev);color:var(--ink);outline:none;font-family:inherit;flex:0 0 auto;">
+          {% for key, config in research_models.items() %}
+            <option value="{{ key }}" {% if config.default %}selected{% endif %}>{{ config.label }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-orange" type="submit">Research</button>
+      </form>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-title">⚡ Run full pipeline on an athlete</div>
+      <div class="tool-desc">Research → write → quality check. ~3-5 minutes per athlete.</div>
+      <form method="post" action="/admin/run-pipeline" class="tool-form">
+        <input type="text" name="athlete" placeholder="Athlete name">
+        <input type="text" name="sport" placeholder="Sport" style="max-width:140px;">
+        <button class="btn btn-orange" type="submit">Run pipeline</button>
+      </form>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-title">🔎 Discover new athletes</div>
+      <div class="tool-desc">Find N more athletes worth covering. They go into the queue.</div>
+      <form method="post" action="/admin/run-discovery" class="tool-form">
+        <input type="number" name="n" value="5" style="max-width:80px;">
+        <button class="btn btn-ghost" type="submit">Run discovery</button>
+      </form>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-title">📅 Process queue</div>
+      <div class="tool-desc">Pop the next N from the queue and run them through the pipeline.</div>
+      <form method="post" action="/admin/run-pipeline" class="tool-form">
+        <input type="number" name="quota" value="1" style="max-width:80px;">
+        <button class="btn btn-ghost" type="submit">Run daily</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Research Models Info -->
+  <div class="section" id="jobs-section" style="display:none;">
+    <div class="section-h"><span>🔄 Live research progress</span><span class="meta" id="refresh-meter">Auto-refresh</span></div>
+    <div id="jobs-list"></div>
+  </div>
+
+  <div class="section" style="margin-bottom:24px;">
+    <div class="section-h">📋 Available research models</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;">
+      {% for key, config in research_models.items() %}
+      <div style="background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;font-size:12px;">
+        <div style="font-weight:500;color:var(--ink);margin-bottom:4px;">{{ config.label }}{% if config.default %} <span style="background:var(--green-soft);color:var(--green);padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;margin-left:6px;">DEFAULT</span>{% endif %}</div>
+        <div style="color:var(--ink-muted);margin-bottom:6px;font-size:11px;">{{ config.description }}</div>
+        <div style="color:var(--ink-faint);font-family:monospace;font-size:10px;word-break:break-all;">{{ config.model }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-h">
+      <span>Pending review · {{ pending|length }}</span>
+      <span class="queue-badge">{{ queue.queue|length }} queued · {{ queue.processed|length }} processed</span>
+    </div>
+    {% if pending %}
+      {% for s in pending %}
+      <div class="row">
+        <div class="row-meta">
+          <a class="row-name" href="/admin/story/{{ s.story_id }}">{{ s.athlete_name }}</a>
+          <span class="row-sport">{{ s.sport }}</span>
+          <span class="score {% if s.confidence_score >= 90 %}score-high{% elif s.confidence_score >= 75 %}score-mid{% else %}score-low{% endif %}">{{ s.confidence_score }}%</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <a class="btn btn-ghost" href="/admin/story/{{ s.story_id }}">Review</a>
+          <form method="post" action="/admin/story/{{ s.story_id }}/approve" style="display:inline;"><button class="btn btn-green" type="submit">Approve</button></form>
+          <form method="post" action="/admin/story/{{ s.story_id }}/reject" style="display:inline;"><button class="btn btn-red" type="submit">Reject</button></form>
+          <form method="post" action="/admin/story/{{ s.story_id }}/delete" onsubmit="return confirm('Hard-delete this story permanently?');" style="display:inline;">
+            <input type="hidden" name="hard" value="1">
+            <button class="btn btn-ghost" style="color:#9B1C1C;" type="submit" title="Permanently delete">🗑</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">No stories waiting. Run discovery + pipeline to generate more.</div>
+    {% endif %}
+  </div>
+
+  {% if dossiers %}
+  <div class="section">
+    <div class="section-h"><span>Saved dossiers · {{ dossiers|length }}</span></div>
+    {% for d in dossiers %}
+      <div class="row">
+        <div class="row-meta">
+          {% if d.image_url %}<img class="avatar" src="{{ d.image_url }}" alt="">
+          {% else %}<div class="avatar-fallback">{{ d.name[:1] }}</div>{% endif %}
+          <a class="row-name" href="/admin/research/{{ d.slug }}">{{ d.name }}</a>
+          <span class="row-sport">{{ d.sport }}{% if d.country %} · {{ d.country }}{% endif %}</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <a class="btn btn-ghost" href="/admin/research/{{ d.slug }}">Open</a>
+          <form method="post" action="/admin/research/{{ d.slug }}/write" style="display:inline;"><button class="btn btn-orange" type="submit">Write story</button></form>
+          <form method="post" action="/admin/research/{{ d.slug }}/delete" style="display:inline;"><button class="btn btn-red" type="submit">Discard</button></form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="section">
+    <div class="section-h"><span>Recently published</span></div>
+    {% for s in published %}
+      <div class="row"><div class="row-meta"><a class="row-name" href="/story/{{ s.story_id }}">{{ s.athlete_name }}</a><span class="row-sport">{{ s.sport }}</span></div></div>
+    {% else %}<div class="empty">Nothing published yet.</div>{% endfor %}
+  </div>
+
+  <div class="section">
+    <div class="section-h"><span>Recently rejected</span></div>
+    {% for s in rejected %}
+      <div class="row"><div class="row-meta"><span class="row-name">{{ s.athlete_name }}</span><span class="row-sport">{{ s.reject_reason or 'low confidence' }}</span></div></div>
+    {% else %}<div class="empty">Nothing rejected.</div>{% endfor %}
+  </div>
+</div>
+
+<script>
+// Live job panel (light JSON poll every 3s for visual progress) +
+// full page refresh every 15s ONLY while a job is running.
+let lastJobsHash = "";
+let hasActiveJob = false;
+let countdown = 15;
+
+async function pollJobs(){
+  try {
+    const r = await fetch('/admin/jobs.json');
+    if(!r.ok) return;
+    const jobs = await r.json();
+    const arr = Object.values(jobs).sort((a,b)=> (b.started||0)-(a.started||0));
+    const sec = document.getElementById('jobs-section');
+    const list = document.getElementById('jobs-list');
+    if(arr.length === 0){ sec.style.display = 'none'; hasActiveJob = false; return; }
+    sec.style.display = '';
+    hasActiveJob = arr.some(j => j.status === 'running');
+    const hash = JSON.stringify(arr.map(j=>[j.id,j.status,j.steps.length,j.steps.map(s=>s.status).join(',')]));
+    if(hash === lastJobsHash) return;
+    lastJobsHash = hash;
+    list.innerHTML = arr.slice(0,6).map(j=>{
+      const steps = j.steps || [];
+      const total = Math.max(steps.length, 1);
+      const done  = steps.filter(s => s.status === 'done').length;
+      const pct   = j.status === 'done' ? 100 : Math.round((done/total) * 100);
+      const elapsed = j.finished
+        ? Math.round(((j.finished||0) - (j.started||0)))
+        : Math.round((Date.now()/1000) - (j.started||Date.now()/1000));
+      const barColor = j.status === 'error' ? '#B14B4B'
+                     : j.status === 'done'  ? '#16A34A'
+                     : '#C96442';
+      return `
+      <div class="job-card">
+        <div class="job-head">
+          <div class="job-title">${j.label}</div>
+          <span class="job-status j-${j.status}">${j.status}</span>
+        </div>
+        <div style="background:var(--bg-mute);height:6px;border-radius:3px;overflow:hidden;margin:8px 0 12px;">
+          <div style="height:100%;width:${pct}%;background:${barColor};transition:width .4s ease;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:8px;">
+          <span>${done}/${total} steps · ${pct}%</span>
+          <span>⏱ ${elapsed}s</span>
+        </div>
+        ${steps.map(s=>`
+          <div class="job-step">
+            <div class="s-dot s-${s.status}"></div>
+            <span>${s.name}</span>
+            ${s.note?`<span class="s-note">— ${s.note}</span>`:''}
+          </div>
+        `).join('')}
+        ${j.status==='error'&&j.result?`<div style="font-size:11px;color:var(--red);margin-top:8px;">${j.result}</div>`:''}
+      </div>`;
+    }).join('');
+  } catch(e){}
+}
+pollJobs();
+setInterval(pollJobs, 3000);
+
+// Auto-refresh tab every 15s while a job is running (so new pending stories surface)
+function tickRefresh(){
+  if(!hasActiveJob){ countdown = 15; updateRefreshLabel(); return; }
+  countdown -= 1;
+  updateRefreshLabel();
+  if(countdown <= 0){ location.reload(); }
+}
+function updateRefreshLabel(){
+  const el = document.getElementById('refresh-meter');
+  if(!el) return;
+  el.textContent = hasActiveJob ? `Refreshing in ${countdown}s` : 'Auto-refresh';
+}
+setInterval(tickRefresh, 1000);
+</script>
+{% endblock %}

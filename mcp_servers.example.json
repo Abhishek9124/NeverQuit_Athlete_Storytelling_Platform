@@ -1,0 +1,23 @@
+[
+  {
+    "name": "fetch",
+    "description": "Fetch any URL and return its contents",
+    "command": "uvx",
+    "args": ["mcp-server-fetch"]
+  },
+  {
+    "name": "brave_search",
+    "description": "Web search via Brave",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+    "env": {
+      "BRAVE_API_KEY": "your-brave-key-here"
+    }
+  },
+  {
+    "name": "wikipedia",
+    "description": "Wikipedia article lookup",
+    "command": "uvx",
+    "args": ["mcp-server-wikipedia"]
+  }
+]

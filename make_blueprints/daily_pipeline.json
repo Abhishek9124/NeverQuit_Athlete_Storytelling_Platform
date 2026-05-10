@@ -1,0 +1,13 @@
+{
+  "name": "NeverQuit Daily Pipeline",
+  "schedule": {"type": "cron", "expr": "0 0 * * *", "tz": "Asia/Kolkata"},
+  "steps": [
+    {"id": "trigger", "type": "schedule"},
+    {"id": "run_pipeline", "type": "http",
+     "method": "POST", "url": "{{REPLIT_URL}}/run-daily",
+     "headers": {"X-Auth": "{{PIPELINE_TOKEN}}"}},
+    {"id": "notify_owner", "type": "whatsapp",
+     "to": "{{OWNER_PHONE}}",
+     "body": "📚 NeverQuit: {{run_pipeline.body.count}} new stories ready to review at {{DASHBOARD_URL}}"}
+  ]
+}

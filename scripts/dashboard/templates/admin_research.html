@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block tab_admin %}active{% endblock %}
+{% block title %}Dossier · {{ dossier.athlete_name }}{% endblock %}
+{% block content %}
+<style>
+.research-wrap{max-width:880px;margin:0 auto;padding:24px 20px;}
+.research-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;}
+.research-h1{font-size:22px;font-weight:500;}
+.research-sub{font-size:13px;color:var(--color-text-secondary);margin-top:4px;}
+.research-actions{display:flex;gap:8px;}
+.dossier-card{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px 18px;margin-bottom:14px;}
+.dossier-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.dossier-body{font-size:13px;line-height:1.6;color:var(--color-text-primary);}
+.dossier-list{font-size:13px;line-height:1.7;padding-left:18px;}
+.quote-card{background:#FAECE7;border-left:3px solid #D85A30;padding:10px 14px;margin:6px 0;font-size:13px;color:#712B13;font-style:italic;}
+.source-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;}
+.source-row:last-child{border-bottom:none;}
+.source-row a{color:#3C3489;text-decoration:underline;word-break:break-all;}
+.cred{font-size:10px;padding:2px 8px;border-radius:20px;}
+.cred-high{background:#E1F5EE;color:#085041;}
+.cred-medium{background:#FAEEDA;color:#633806;}
+.cred-low{background:#fee2e2;color:#7f1d1d;}
+.uncertain{background:#fff7ed;border:0.5px solid #fed7aa;color:#9a3412;padding:8px 12px;border-radius:8px;font-size:12px;margin:4px 0;}
+</style>
+
+<div class="research-wrap">
+  <a href="/admin" style="font-size:12px;color:var(--color-text-secondary);">← Back to admin</a>
+
+  {% if dossier.image_url %}
+  <img src="{{ dossier.image_url }}" alt="{{ dossier.athlete_name }}"
+       style="width:100%;max-height:340px;object-fit:cover;border-radius:var(--border-radius-lg);margin:14px 0;">
+  {% endif %}
+
+  <div class="research-head">
+    <div>
+      <div class="research-h1">{{ dossier.athlete_name or slug }}</div>
+      <div class="research-sub">{{ dossier.sport }}{% if dossier.country %} · {{ flag(dossier.country) }} {{ dossier.country }}{% endif %}{% if dossier.image_source %} · 📷 {{ dossier.image_source }}{% endif %}{% if dossier._research_model %} · <span style="background:#E8F4F8;color:#0B5E6F;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;">{{ dossier._research_model.label }}</span>{% endif %}</div>
+      {% set required = ['birth','disability_or_injury','early_life','key_struggles','darkest_moment_scene','turning_point','training_habits','competitions','exact_quotes','outcomes','principle_or_research'] %}
+      {% set missing = dossier._coverage_missing or [] %}
+      {% set covered = required|length - missing|length %}
+      {% set pct = (100 * covered / required|length)|int %}
+      <div style="margin-top:10px;display:flex;align-items:center;gap:10px;">
+        <div style="flex:0 0 200px;background:var(--bg-mute);height:8px;border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:{{ pct }}%;background:{% if pct >= 90 %}#16A34A{% elif pct >= 70 %}#C2891D{% else %}#B14B4B{% endif %};"></div>
+        </div>
+        <span style="font-size:12px;color:var(--ink-muted);">{{ covered }}/{{ required|length }} fields · {{ pct }}% coverage</span>
+        {% if missing %}<span style="font-size:11px;color:var(--red,#B14B4B);">missing: {{ missing|join(', ') }}</span>{% endif %}
+      </div>
+    </div>
+    <div class="research-actions">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('dossier-photo-modal').style.display='flex'">📷 Edit photo</button>
+      <form method="post" action="/admin/research/{{ slug }}/rerun" style="display:inline-flex;gap:6px;align-items:center;">
+        <select name="model" style="height:36px;border:1px solid var(--line-strong);border-radius:8px;padding:0 10px;font-size:12px;">
+          {% for k, cfg in research_models.items() %}
+            <option value="{{ k }}" {% if dossier._research_model and dossier._research_model.key == k %}selected{% endif %}>{{ cfg.label }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-ghost" type="submit" title="Re-run research with the selected model">🔁 Re-research</button>
+      </form>
+      <form method="post" action="/admin/research/{{ slug }}/write">
+        <button class="btn-orange btn-green" type="submit">✓ Write full story</button>
+      </form>
+      <form method="post" action="/admin/research/{{ slug }}/delete">
+        <button class="btn-orange btn-red" type="submit">✗ Discard dossier</button>
+      </form>
+    </div>
+
+<div id="dossier-photo-modal" style="display:none;position:fixed;inset:0;background:rgba(31,30,27,.5);z-index:60;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+  <form method="post" action="/admin/research/{{ slug }}/edit-photo" enctype="multipart/form-data"
+        style="background:var(--bg-elev);padding:28px;border-radius:14px;width:420px;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+    <div style="font-size:16px;font-weight:600;">Replace athlete photo</div>
+    <div style="font-size:13px;color:var(--ink-muted);">Upload a JPG/PNG/WebP, OR paste a direct image URL.</div>
+    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" style="height:auto;padding:8px;">
+    <div style="font-size:11px;color:var(--ink-faint);text-align:center;">— or —</div>
+    <input type="text" name="photo_url" placeholder="https://example.com/photo.jpg">
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('dossier-photo-modal').style.display='none'">Cancel</button>
+      <button type="submit" class="btn btn-orange">Save photo</button>
+    </div>
+  </form>
+</div>
+  </div>
+
+  {% if dossier.birth %}
+  <div class="dossier-card">
+    <div class="dossier-label">Birth</div>
+    <div class="dossier-body">{{ dossier.birth.date }} · {{ dossier.birth.place }}</div>
+  </div>
+  {% endif %}
+
+  {% if dossier.disability_or_injury %}
+  <div class="dossier-card">
+    <div class="dossier-label">Disability / injury</div>
+    <div class="dossier-body">{{ dossier.disability_or_injury }}</div>
+  </div>
+  {% endif %}
+
+  {% if dossier.early_life %}
+  <div class="dossier-card">
+    <div class="dossier-label">Early life</div>
+    <div class="dossier-body">{{ dossier.early_life }}</div>
+  </div>
+  {% endif %}
+
+  {% if dossier.key_struggles %}
+  <div class="dossier-card">
+    <div class="dossier-label">Key struggles</div>
+    <ul class="dossier-list">{% for s in dossier.key_struggles %}<li>{{ s }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  {% if dossier.turning_point %}
+  <div class="dossier-card">
+    <div class="dossier-label">Turning point</div>
+    <div class="dossier-body">
+      <strong>{{ dossier.turning_point.who }}</strong> — {{ dossier.turning_point.what }}
+      {% if dossier.turning_point.when %}<br><span style="color:var(--color-text-tertiary);font-size:12px;">{{ dossier.turning_point.when }}</span>{% endif %}
+      {% if dossier.turning_point.quote %}<div class="quote-card">"{{ dossier.turning_point.quote }}"</div>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if dossier.training_habits %}
+  <div class="dossier-card">
+    <div class="dossier-label">Training habits</div>
+    <ul class="dossier-list">{% for h in dossier.training_habits %}<li>{{ h }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  {% if dossier.competitions %}
+  <div class="dossier-card">
+    <div class="dossier-label">Competitions</div>
+    <ul class="dossier-list">{% for c in dossier.competitions %}<li><strong>{{ c.year }}</strong> — {{ c.event }} · {{ c.result }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  {% if dossier.exact_quotes %}
+  <div class="dossier-card">
+    <div class="dossier-label">Verified quotes</div>
+    {% for q in dossier.exact_quotes %}
+      <div class="quote-card">"{{ q.text }}"<div style="font-style:normal;font-size:11px;color:var(--color-text-tertiary);margin-top:4px;">— {{ q.source }}</div></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if dossier.uncertain_facts %}
+  <div class="dossier-card" style="background:#fff7ed;border-color:#fed7aa;">
+    <div class="dossier-label" style="color:#9a3412;">⚠ Uncertain facts — verify before writing</div>
+    {% for u in dossier.uncertain_facts %}<div class="uncertain">{{ u }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if dossier.sources %}
+  <div class="dossier-card">
+    <div class="dossier-label">Sources ({{ dossier.sources|length }})</div>
+    {% for s in dossier.sources %}
+      <div class="source-row">
+        <a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.title }}</a>
+        <span class="cred cred-{{ s.credibility or 'medium' }}">{{ s.credibility or 'medium' }}</span>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <details style="margin-top:18px;">
+    <summary style="cursor:pointer;font-size:12px;color:var(--color-text-tertiary);">Raw JSON</summary>
+    <pre style="background:#0f172a;color:#e2e8f0;padding:14px;border-radius:8px;overflow:auto;font-size:11px;line-height:1.5;margin-top:8px;">{{ dossier|tojson(indent=2) }}</pre>
+  </details>
+</div>
+{% endblock %}

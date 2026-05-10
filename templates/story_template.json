@@ -1,0 +1,27 @@
+{
+  "schema_version": "2.0",
+  "sections": [
+    {"id": "headline", "title": "Headline", "format": "[Subject] Lost/Faced [Challenge], But [Defiant Action/Outcome]"},
+    {"id": "subheadline", "title": "Subheadline", "max_words": 18},
+    {"id": "opening_hook", "title": "Opening Hook – universal pain point", "min_words": 90, "max_words": 130},
+    {"id": "pull_quote", "title": "Pull quote", "min_words": 10, "max_words": 25},
+    {"id": "subject_story", "title": "Subject story - constraints and comeback", "min_words": 160, "max_words": 220},
+    {"id": "constraints", "title": "Constraints", "format": "object", "keys": ["physical", "emotional", "identity"]},
+    {"id": "turning_point", "title": "Turning point", "min_words": 70, "max_words": 110},
+    {"id": "outcome", "title": "Outcome", "min_words": 70, "max_words": 110},
+    {"id": "tiny_practices", "title": "Tiny practices, big shifts", "count": 4, "format": "list of {name, explanation, micro_step}"},
+    {"id": "inner_reframe", "title": "Inner reframe - when it's you vs. you", "min_words": 120, "max_words": 170},
+    {"id": "reflective_questions", "title": "Journaling prompts", "count": 3, "format": "list"},
+        {"id": "body_protocol", "title": "Fuel beats force - body protocol", "count": 4, "format": "list of {name, instruction}"},
+    {"id": "two_minute_actions", "title": "Do it in two minutes", "count": 3, "format": "list of {name, instruction, image_prompt}"},
+    {"id": "closing_micro", "title": "Closing micro‑sections", "format": "object", "keys": ["ask_yourself", "tell_us", "why_this_works", "from_us"]},
+    {"id": "whatsapp_share", "title": "WhatsApp share message", "max_chars": 200},
+    {"id": "ask_yourself", "title": "Ask yourself this", "max_words": 25},
+    {"id": "call_to_action", "title": "Tell us, we'll cheer", "min_words": 35, "max_words": 60},
+    {"id": "research_backing", "title": "Why this works", "min_words": 45, "max_words": 90},
+    {"id": "signoff", "title": "From us, with care", "max_words": 35},
+    {"id": "whatsapp_share", "title": "WhatsApp share message", "max_chars": 200}
+  ],
+  "languages": ["en", "hi", "ta", "kn", "mr", "bn", "te", "gu"],
+  "total_word_count": {"min": 1000, "max": 1400}
+}

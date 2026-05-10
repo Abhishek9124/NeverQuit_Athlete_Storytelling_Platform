@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}{{ site }}{% endblock %}</title>
+<style>
+:root{
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-serif:Georgia,"Times New Roman",serif;
+  --color-text-primary:#1a1a1a;
+  --color-text-secondary:#525252;
+  --color-text-tertiary:#8a8a8a;
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#f7f6f3;
+  --color-border-secondary:#d4d4d4;
+  --color-border-tertiary:#e8e6e1;
+  --border-radius-md:8px;
+  --border-radius-lg:12px;
+
+  /* aliases used elsewhere in app templates */
+  --ink:var(--color-text-primary);
+  --ink-muted:var(--color-text-secondary);
+  --ink-faint:var(--color-text-tertiary);
+  --bg:var(--color-background-primary);
+  --bg-elev:var(--color-background-primary);
+  --bg-mute:var(--color-background-secondary);
+  --bg-deep:#EBE9DD;
+  --line:var(--color-border-tertiary);
+  --line-strong:var(--color-border-secondary);
+  --accent:#D85A30;
+  --accent-hover:#B84A20;
+  --accent-soft:#FAECE7;
+  --accent-deep:#712B13;
+  --green:#085041;
+  --green-soft:#E1F5EE;
+  --red:#9B1C1C;
+  --red-soft:#FEE2E2;
+  --gold-soft:#FAEEDA;
+  --gold-deep:#633806;
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+a{color:inherit;text-decoration:none;}
+a:hover{color:#D85A30;}
+code{font-family:"SF Mono",Menlo,Consolas,monospace;background:var(--color-background-secondary);padding:1px 6px;border-radius:4px;font-size:.88em;}
+
+.flash{background:#FAEEDA;color:#633806;padding:10px 20px;font-size:13px;border-bottom:0.5px solid #e8d8b8;}
+
+/* Nav matches site/index.html */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);position:sticky;top:0;z-index:20;}
+.logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:500;}
+.logo-icon{width:28px;height:28px;background:#D85A30;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.logo-icon svg{width:16px;height:16px;fill:#FAECE7;}
+.nav-tabs{display:flex;gap:2px;background:var(--color-background-secondary);border-radius:10px;padding:3px;}
+.tab{font-size:12px;padding:5px 12px;border-radius:7px;cursor:pointer;color:var(--color-text-secondary);border:none;background:transparent;font-family:inherit;text-decoration:none;display:inline-block;}
+.tab:hover{color:var(--color-text-primary);}
+.tab.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border:0.5px solid var(--color-border-tertiary);}
+
+.admin-pill{font-size:10px;background:#1a1a1a;color:#fff;padding:2px 8px;border-radius:20px;margin-left:6px;letter-spacing:.04em;font-weight:500;text-transform:uppercase;}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border:none;border-radius:var(--border-radius-md);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;text-decoration:none;line-height:1;transition:background .15s,border-color .15s;}
+.btn-orange,.btn-primary{background:#D85A30;color:#fff;}
+.btn-orange:hover,.btn-primary:hover{background:#B84A20;color:#fff;}
+.btn-ghost{background:var(--color-background-primary);color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);}
+.btn-ghost:hover{background:var(--color-background-secondary);}
+.btn-green{background:#085041;color:#fff;}
+.btn-green:hover{background:#063A2F;color:#fff;}
+.btn-red{background:#9B1C1C;color:#fff;}
+.btn-red:hover{background:#7F1D1D;color:#fff;}
+button{font-family:inherit;}
+
+input[type=text],input[type=password],input[type=number],input[type=email]{height:34px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:0 12px;font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);outline:none;font-family:inherit;}
+input[type=text]:focus,input[type=password]:focus,input[type=number]:focus,input[type=email]:focus{border-color:#D85A30;}
+select{height:34px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:0 10px;font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);outline:none;font-family:inherit;}
+
+.badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;}
+.b-athlete{background:#FAECE7;color:#712B13;}
+.b-para{background:#EEEDFE;color:#3C3489;}
+.b-paralympic{background:#E1F5EE;color:#085041;}
+.score{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;color:#fff;}
+.score-high{background:#085041;}
+.score-mid{background:#9A6D00;}
+.score-low{background:#9B1C1C;}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:flex;align-items:center;justify-content:center;}
+.modal{background:#fff;padding:24px;border-radius:12px;width:340px;display:flex;flex-direction:column;gap:12px;box-shadow:0 12px 40px rgba(0,0,0,.15);}
+.modal-title{font-size:15px;font-weight:500;}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a href="/" class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 16 16"><path d="M8 1C5 1 3 3.5 3 6c0 3.5 5 9 5 9s5-5.5 5-9c0-2.5-2-5-5-5zm0 6.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg></div>
+    {{ site }}{% if is_admin %}<span class="admin-pill">Admin</span>{% if story_model %}<span class="admin-pill" style="background:#D85A30;" title="Story writer model">✍ {{ story_model }}</span>{% endif %}{% if research_model %}<span class="admin-pill" style="background:#3C3489;" title="Research model">🔎 {{ research_model }}</span>{% endif %}{% endif %}
+  </a>
+  <div class="nav-tabs">
+    <a href="/" class="tab {% block tab_home %}{% endblock %}">Home</a>
+    {% if is_admin %}
+      <a href="/admin" class="tab {% block tab_admin %}{% endblock %}">Admin</a>
+      <a href="/admin/subscribers" class="tab {% block tab_subs %}{% endblock %}">📨 Subs</a>
+      <form method="post" action="/admin/logout" style="display:inline;"><button class="tab" type="submit">Sign out</button></form>
+    {% else %}
+      <button class="tab" onclick="document.getElementById('admin-login').style.display='flex'">Admin</button>
+    {% endif %}
+  </div>
+</div>
+
+{% if not is_admin %}
+<div id="admin-login" class="modal-bg" style="display:none;">
+  <form method="post" action="/admin/login" class="modal">
+    <div class="modal-title">Admin sign-in</div>
+    <input type="password" name="token" placeholder="Admin token" autofocus>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('admin-login').style.display='none'">Cancel</button>
+      <button type="submit" class="btn btn-orange">Sign in</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% with messages = get_flashed_messages() %}
+  {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+{# ---------- Persistent newsletter pill (public side only) ---------- #}
+{% if not is_admin %}
+<div id="nl-pill" style="position:fixed;bottom:18px;right:18px;z-index:40;background:#D85A30;color:#fff;padding:10px 16px;border-radius:30px;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 6px 20px rgba(216,90,48,.35);display:flex;align-items:center;gap:8px;transition:transform .2s;" onclick="document.getElementById('nl-modal').style.display='flex'">
+  ✉ <span>Get one story every Monday</span>
+</div>
+<div id="nl-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;align-items:center;justify-content:center;">
+  <form id="nl-form" class="modal" style="width:380px;" onsubmit="nlSubscribe(event)">
+    <div style="font-family:Georgia,serif;font-size:18px;font-weight:500;letter-spacing:-.01em;">One comeback story.<br>Every Monday morning.</div>
+    <div style="font-size:13px;color:#525252;line-height:1.55;">No noise. No motivational posters. Just one specific, vivid, true story of someone who didn't quit.</div>
+    <input type="email" name="email" placeholder="you@example.com" required>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('nl-modal').style.display='none'">Maybe later</button>
+      <button type="submit" class="btn btn-orange">Subscribe</button>
+    </div>
+  </form>
+</div>
+<script>
+(function(){
+  if (localStorage.getItem('nq_subscribed')==='1') {
+    const p = document.getElementById('nl-pill'); if (p) p.style.display='none';
+  }
+})();
+async function nlSubscribe(ev){
+  ev.preventDefault();
+  const form = ev.target;
+  const btn = form.querySelector('button[type=submit]');
+  const email = form.querySelector('input[name=email]').value;
+  btn.textContent = 'Subscribing…'; btn.disabled = true;
+  try {
+    const fd = new FormData(); fd.append('email', email); fd.append('source', 'home_pill');
+    const r = await fetch('/api/subscribe', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (j.ok) {
+      btn.textContent = 'Subscribed ✓';
+      localStorage.setItem('nq_subscribed','1');
+      setTimeout(()=>{
+        document.getElementById('nl-modal').style.display='none';
+        document.getElementById('nl-pill').style.display='none';
+      }, 900);
+    } else {
+      btn.textContent = 'Try again';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.textContent = 'Try again';
+    btn.disabled = false;
+  }
+}
+</script>
+{% endif %}
+
+</body></html>

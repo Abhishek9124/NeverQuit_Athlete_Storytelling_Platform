@@ -1,0 +1,63 @@
+# ────────── Secrets ──────────
+.env
+.env.local
+.env.*.local
+mcp_servers.json
+
+# ────────── Local IDE / editor ──────────
+.claude/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ────────── Python ──────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ────────── Virtualenvs ──────────
+.venv/
+venv/
+env/
+ENV/
+
+# ────────── OS junk ──────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ────────── Logs ──────────
+*.log
+logs/
+
+# ────────── Generated / runtime data ──────────
+# These contain user data — subscriber emails, athlete photos, generated stories.
+# Use `*` instead of trailing `/` so we can re-include .gitkeep below.
+data/neverquit.sqlite
+data/neverquit.sqlite-journal
+data/cache/
+data/athlete_queue.json
+
+data/stories/*
+!data/stories/.gitkeep
+
+data/dossiers/*
+!data/dossiers/.gitkeep
+
+data/images/*
+!data/images/.gitkeep
+
+# ────────── Replit ──────────
+.replit
+replit.nix

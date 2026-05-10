@@ -1,0 +1,313 @@
+{# Reusable story body — matches story_template.html exactly. #}
+<style>
+/* Story body uses system fonts + Georgia serif (no Google Fonts). */
+.read-progress{height:3px;background:#D85A30;border-radius:2px;margin-bottom:20px;transition:width .15s;position:fixed;top:0;left:0;z-index:30;width:0;}
+
+.reader{padding:24px 20px;max-width:780px;margin:0 auto;}
+.back{font-size:12px;color:var(--color-text-secondary);background:none;border:none;cursor:pointer;margin-bottom:18px;display:flex;align-items:center;gap:4px;padding:0;font-family:inherit;text-decoration:none;}
+.back:hover{color:#D85A30;}
+
+.r-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.r-title{font-size:22px;font-weight:500;line-height:1.35;margin-bottom:8px;}
+.r-byline{font-size:12px;color:var(--color-text-secondary);display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px;}
+.mini-person{display:flex;align-items:center;gap:6px;}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;background:#FAEEDA;color:#633806;overflow:hidden;}
+.av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.r-divider{height:0.5px;background:var(--color-border-tertiary);margin-bottom:20px;}
+
+/* Country flag block — uses a real flag image (flagcdn.com). */
+.country-flag-block{display:flex;align-items:center;gap:16px;padding:14px 18px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:18px;}
+.country-flag-img{width:56px;height:42px;object-fit:cover;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.08), 0 0 0 0.5px rgba(0,0,0,.05);background:#EBE9DD;flex-shrink:0;}
+.country-flag-meta{display:flex;flex-direction:column;gap:2px;}
+.country-flag-name{font-size:14px;font-weight:500;color:var(--color-text-primary);}
+.country-flag-sub{font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;font-weight:500;}
+
+.r-body{font-size:15px;line-height:1.85;font-family:var(--font-serif);}
+.r-body p{margin-bottom:1.1em;}
+
+.pullquote{border-left:3px solid #D85A30;padding:12px 16px;margin:20px 0;background:#FAECE7;}
+.pullquote p{font-size:15px;font-weight:500;color:#712B13;font-style:italic;font-family:var(--font-serif);line-height:1.5;margin:0;}
+
+.tl-box,.takeaway-box,.goal-box,.share-box{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px 18px;margin:20px 0;}
+.box-title{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+
+.tl-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;background:#EF9F27;}
+.tl-yr{font-size:11px;font-weight:500;color:var(--color-text-secondary);min-width:34px;margin-top:2px;}
+.tl-txt{font-size:12px;color:var(--color-text-primary);line-height:1.5;}
+
+.tk-row{display:flex;gap:8px;font-size:12px;color:var(--color-text-primary);margin-bottom:7px;align-items:flex-start;line-height:1.5;}
+.tk-dot{width:6px;height:6px;border-radius:50%;background:#D85A30;margin-top:5px;flex-shrink:0;}
+
+.goal-input-row{display:flex;gap:8px;margin-top:10px;}
+.goal-input-row input{flex:1;height:34px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:0 10px;font-size:12px;background:var(--color-background-primary);color:var(--color-text-primary);outline:none;font-family:inherit;}
+.goal-input-row button{height:34px;padding:0 14px;background:#D85A30;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:12px;cursor:pointer;font-family:inherit;}
+.goal-input-row button:hover{background:#B84A20;}
+
+.share-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.share-btn{font-size:11px;padding:5px 12px;border:0.5px solid var(--color-border-secondary);border-radius:20px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);text-decoration:none;display:inline-block;}
+.share-btn:hover{background:var(--color-background-secondary);}
+
+/* Scroll-triggered fade-in for prose blocks. */
+.r-body, .pullquote, .tl-box, .takeaway-box, .share-box{opacity:0;transform:translateY(8px);transition:opacity .5s ease, transform .5s ease;}
+.r-body.in, .pullquote.in, .tl-box.in, .takeaway-box.in, .share-box.in{opacity:1;transform:translateY(0);}
+
+.admin-strip{display:flex;justify-content:flex-end;margin-bottom:14px;font-size:12px;color:var(--color-text-tertiary);gap:8px;align-items:center;}
+
+/* More stories carousel below */
+.more-head{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.06em;text-transform:uppercase;margin:32px 0 12px;}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:20px;}
+.mcard{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;text-decoration:none;color:inherit;transition:border-color .15s, transform .15s;}
+.mcard:hover{border-color:#D85A30;transform:translateY(-2px);color:inherit;}
+.mthumb{height:96px;background:#EBE9DD;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:32px;color:#712B13;font-weight:600;overflow:hidden;}
+.mthumb img{width:100%;height:100%;object-fit:cover;}
+.mbody{padding:10px 12px;}
+.msport{font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:3px;}
+.mname{font-size:13px;font-weight:500;color:var(--color-text-primary);}
+</style>
+
+<div class="read-progress" id="rp"></div>
+
+{% if is_admin and not s.is_seed %}
+<div id="photo-modal" style="display:none;position:fixed;inset:0;background:rgba(31,30,27,.5);z-index:60;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+  <form method="post" action="/admin/story/{{ s.story_id }}/edit-photo" enctype="multipart/form-data" class="modal" style="width:380px;">
+    <div class="modal-title">Replace athlete photo</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);">Upload a JPG/PNG/WebP, OR paste a direct image URL.</div>
+    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" style="height:auto;padding:8px;">
+    <div style="font-size:11px;color:var(--color-text-tertiary);text-align:center;">— or —</div>
+    <input type="text" name="photo_url" placeholder="https://example.com/photo.jpg">
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('photo-modal').style.display='none'">Cancel</button>
+      <button type="submit" class="btn btn-orange">Save photo</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<div class="reader">
+  <a href="/" class="back">← Back to stories</a>
+
+
+  {# Initials → for the byline avatar fallback. #}
+  {% set parts = (s.athlete_name or '').split() %}
+  {% set initials = (parts[0][:1] if parts else '?') + (parts[-1][:1] if parts|length > 1 else '') %}
+  {% set hero = s.image_url or (s.dossier.image_url if s.dossier else '') %}
+
+  {% set iso = country_iso(s.country) %}
+  {% if s.country and iso %}
+  <div class="country-flag-block">
+    <img class="country-flag-img"
+         src="https://flagcdn.com/w160/{{ iso|lower }}.png"
+         srcset="https://flagcdn.com/w160/{{ iso|lower }}.png 1x, https://flagcdn.com/w320/{{ iso|lower }}.png 2x"
+         alt="{{ s.country }} flag"
+         onerror="this.outerHTML='<div style=\'font-size:42px;line-height:1;\'>{{ flag(s.country) }}</div>';">
+    <div class="country-flag-meta">
+      <div class="country-flag-name">{{ s.country }}</div>
+      <div class="country-flag-sub">{{ s.sport }}{% if 'para' in (s.sport or '')|lower %} · Para athlete{% endif %}</div>
+    </div>
+  </div>
+  {% elif s.country and flag(s.country) %}
+  <div class="country-flag-block">
+    <div style="font-size:42px;line-height:1;">{{ flag(s.country) }}</div>
+    <div class="country-flag-meta">
+      <div class="country-flag-name">{{ s.country }}</div>
+      <div class="country-flag-sub">{{ s.sport }}{% if 'para' in (s.sport or '')|lower %} · Para athlete{% endif %}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="r-tags">
+    {% if s.is_seed %}<span class="badge" style="background:#1a1a1a;color:#FAECE0;">Demo</span>{% endif %}
+    {% if 'para' in (s.sport or '')|lower %}<span class="badge b-para">Para athlete</span>{% else %}<span class="badge b-athlete">Athlete</span>{% endif %}
+    {% if s.sport %}<span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);">{{ s.sport }}</span>{% endif %}
+    {% if s.country %}<span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);">{{ flag(s.country) }} {{ s.country }}</span>{% endif %}
+    <span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);">6 min read</span>
+  </div>
+
+  <div class="r-title">{% if sections.headline %}{{ sections.headline }}{% else %}{{ s.athlete_name }}{% endif %}</div>
+
+  <div class="r-byline">
+    <div class="mini-person">
+      <div class="av">{{ initials|upper }}</div>
+      <span>{{ s.athlete_name }}</span>
+    </div>
+    {% if s.country %}<span style="color:var(--color-text-tertiary);">{{ s.country }}</span>{% endif %}
+    {% if s.sport %}<span style="color:var(--color-text-tertiary);">{{ s.sport }}</span>{% endif %}
+  </div>
+
+  <div class="r-divider"></div>
+
+  {# ── First prose block ── #}
+  {% if sections.into_you or sections.hook or sections.world_came_from %}
+  <div class="r-body">
+    {% if sections.into_you %}<p>{{ sections.into_you }}</p>{% endif %}
+    {% if sections.hook %}<p>{{ sections.hook }}</p>{% endif %}
+    {% if sections.world_came_from %}<p>{{ sections.world_came_from }}</p>{% endif %}
+  </div>
+  {% endif %}
+
+  {# ── Pull quote ── #}
+  {% if sections.pull_quote %}
+  <div class="pullquote"><p>"{{ sections.pull_quote }}"</p></div>
+  {% endif %}
+
+  {# ── Second prose block ── #}
+  {% if sections.darkest_moment or sections.turning_point or sections.the_grind or sections.outcome %}
+  <div class="r-body">
+    {% if sections.darkest_moment %}<p>{{ sections.darkest_moment }}</p>{% endif %}
+    {% if sections.turning_point %}<p>{{ sections.turning_point }}</p>{% endif %}
+    {% if sections.the_grind %}<p>{{ sections.the_grind }}</p>{% endif %}
+    {% if sections.outcome %}<p>{{ sections.outcome }}</p>{% endif %}
+  </div>
+  {% endif %}
+
+  {# ── Comeback timeline ── #}
+  {% if sections.comeback_timeline %}
+  <div class="tl-box">
+    <div class="box-title">The comeback timeline</div>
+    {% for t in sections.comeback_timeline %}
+      {% set i = loop.index0 %}
+      <div class="tl-row">
+        <div class="tl-dot" style="background:{% if i == 0 %}#F0997B{% elif i < (sections.comeback_timeline|length - 1) // 2 %}#EF9F27{% else %}#639922{% endif %};"></div>
+        <div class="tl-yr">{{ t.year }}</div>
+        <div class="tl-txt">{{ t.event }}</div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# ── Takeaways + goal box ── #}
+  {% if sections.lessons %}
+  <div class="takeaway-box">
+    <div class="box-title">What you can take from {{ s.athlete_name.split()[0] }}'s story</div>
+    {% for l in sections.lessons %}
+      <div class="tk-row"><div class="tk-dot"></div><span>{{ l }}</span></div>
+    {% endfor %}
+    {% if sections.goal_box_prompt %}
+    <div class="goal-box" style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;margin-top:14px;">
+      <div class="box-title">Set your own goal from this story</div>
+      <div class="goal-input-row">
+        <input type="text" placeholder="What goal will you commit to today?"/>
+        <button onclick="this.textContent='Saved ✓';this.disabled=true;return false;">Get plan ↗</button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# ── Share box ── #}
+  <div class="share-box">
+    <div class="box-title">Share this story</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;">Someone you know needs to read this today.</div>
+    <div class="share-btns">
+      <a class="share-btn" href="https://wa.me/?text={{ (s.athlete_name + ' — ' + (sections.pull_quote or sections.hook[:120]))|urlencode }}" target="_blank">WhatsApp ↗</a>
+      <a class="share-btn" href="https://twitter.com/intent/tweet?text={{ s.athlete_name|urlencode }}" target="_blank">Twitter/X</a>
+      <span class="share-btn" onclick="navigator.clipboard.writeText(location.href);this.textContent='✓ Copied';setTimeout(()=>this.textContent='Copy link',1500);">Copy link</span>
+      <span class="share-btn">Instagram story</span>
+    </div>
+  </div>
+
+  {% if related %}
+  <div class="more-head">More comebacks worth your time</div>
+  <div class="mgrid">
+    {% for c in related %}
+    <a class="mcard" href="/story/{{ c.id }}">
+      <div class="mthumb">{% if c.image_url %}<img src="{{ c.image_url }}" alt="">{% else %}{{ c.athlete_name[:1] }}{% endif %}</div>
+      <div class="mbody"><div class="msport">{{ c.sport }}</div><div class="mname">{{ c.athlete_name }}</div></div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div id="continue-rail" style="display:none;"></div>
+</div>
+
+<script>
+// 1) Reading progress bar
+(function(){
+  const bar=document.getElementById('rp');
+  function tick(){const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=max?Math.min(100,(h.scrollTop/max)*100)+'%':'0';}
+  document.addEventListener('scroll',tick,{passive:true});tick();
+})();
+
+// 2) Scroll-triggered fade-in for prose blocks
+(function(){
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.r-body, .pullquote, .tl-box, .takeaway-box, .share-box').forEach(el => el.classList.add('in'));
+    return;
+  }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { rootMargin: '-40px 0px -10% 0px' });
+  document.querySelectorAll('.r-body, .pullquote, .tl-box, .takeaway-box, .share-box').forEach(el => io.observe(el));
+})();
+
+// 3) Recently viewed — drives the Continue reading rail
+(function(){
+  try {
+    const KEY='nq_history_v1';
+    const sid="{{ s.story_id }}";
+    if (!sid) return;
+    const meta = {
+      id: sid,
+      name: "{{ s.athlete_name|e }}",
+      sport: "{{ s.sport|e }}",
+      img: "{{ s.image_url or (s.dossier.image_url if s.dossier else '') }}",
+      ts: Date.now()
+    };
+    let hist=[]; try{hist=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+    hist = hist.filter(h => h && h.id !== sid);
+    hist.unshift(meta);
+    hist = hist.slice(0,8);
+    localStorage.setItem(KEY, JSON.stringify(hist));
+    const others = hist.slice(1, 5);
+    if (others.length === 0) return;
+    const wrap=document.getElementById('continue-rail');
+    if (!wrap) return;
+    wrap.innerHTML = `
+      <div class="more-head">Continue reading</div>
+      <div class="mgrid">
+        ${others.map(h => `
+          <a class="mcard" href="/story/${h.id}">
+            <div class="mthumb">${h.img ? `<img src="${h.img}" alt="">` : (h.name||'?')[0]}</div>
+            <div class="mbody"><div class="msport">${h.sport||''}</div><div class="mname">${h.name}</div></div>
+          </a>`).join('')}
+      </div>`;
+    wrap.style.display = '';
+  } catch(e){}
+})();
+
+// 4) Highlight-to-share quote pill
+(function(){
+  let bubble;
+  function ensureBubble(){
+    if (bubble) return bubble;
+    bubble=document.createElement('div');
+    bubble.style.cssText='position:absolute;background:#1a1a1a;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;z-index:40;box-shadow:0 4px 16px rgba(0,0,0,.2);';
+    bubble.textContent='💬 Share this quote';
+    bubble.addEventListener('click',()=>{
+      const sel=window.getSelection().toString().trim();
+      if(!sel)return;
+      const text=`"${sel}" — {{ s.athlete_name|e }} via NeverQuit\n${location.href}`;
+      if(navigator.share)navigator.share({text}).catch(()=>{});
+      else{navigator.clipboard.writeText(text);bubble.textContent='✓ Copied';setTimeout(()=>{bubble.textContent='💬 Share this quote';bubble.style.display='none';},1500);}
+    });
+    document.body.appendChild(bubble);
+    return bubble;
+  }
+  document.addEventListener('mouseup',()=>{
+    const sel=window.getSelection();
+    const text=sel.toString().trim();
+    if(text.length<10||text.length>280){if(bubble)bubble.style.display='none';return;}
+    const range=sel.getRangeAt(0);
+    const rect=range.getBoundingClientRect();
+    const b=ensureBubble();
+    b.style.display='block';
+    b.style.top=(window.scrollY+rect.top-38)+'px';
+    b.style.left=(window.scrollX+rect.left+rect.width/2-75)+'px';
+  });
+  document.addEventListener('mousedown',e=>{if(bubble&&e.target!==bubble)bubble.style.display='none';});
+})();
+</script>

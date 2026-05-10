@@ -1,0 +1,13 @@
+openai>=1.0.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+supabase>=2.5.0
+flask>=3.0.0
+gunicorn>=21.2.0
+waitress>=3.0.0
+notion-client>=2.2.1
+pydantic>=2.5.0
+tenacity>=8.2.3
+json-repair>=0.25.0
+# mcp>=1.0.0   # OPTIONAL — requires Python 3.10+. See requirements-mcp.txt
+Pillow>=10.2.0
