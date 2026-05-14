@@ -1,10 +1,15 @@
 """Thin Notion wrapper. No-op if NOTION_TOKEN unset."""
 from __future__ import annotations
 import os
-from notion_client import Client
+try:
+    from notion_client import Client  # type: ignore
+except Exception:
+    Client = None  # package not installed — module no-ops below
 
 
 def client():
+    if Client is None:
+        return None
     token = os.getenv("NOTION_TOKEN")
     return Client(auth=token) if token else None
 

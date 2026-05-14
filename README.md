@@ -1,226 +1,292 @@
-# NeverQuit
+# NeverQuit — AI-Assisted Athlete Storytelling Platform
 
-NeverQuit is an AI-assisted storytelling platform for publishing inspiring athlete comeback stories. It combines a research and writing pipeline with a Flask-based admin dashboard so stories can be researched, drafted, reviewed, approved, and published from one project.
+> An end-to-end content platform that **researches, writes, fact-checks, and publishes**
+> long-form comeback stories of athletes, Paralympians, and differently-abled
+> individuals — with a human editor in the loop at every step.
 
-The current codebase is built around athlete and Paralympian profiles, with a strong focus on resilience narratives, factual research, editorial review, and multi-channel publishing.
+NeverQuit pairs a **multi-agent AI pipeline** with a **production Flask web app**.
+The pipeline turns a single athlete name into a sourced research dossier and a
+structured, editorially-reviewed story. The web app serves both a polished public
+reader and a full admin console for review, approval, per-section visibility
+control, and multi-channel publishing.
 
-## What This Project Does
+---
 
-- Discovers new athlete story candidates and queues them for processing
-- Builds structured research dossiers with sources, quotes, and image metadata
-- Writes long-form story drafts from those dossiers
-- Runs QA and confidence scoring before human review
-- Provides an admin console for research, review, approval, rejection, and reruns
-- Publishes approved stories to external platforms such as Webflow, Mailchimp, Notion, and Supabase
-- Serves a public-facing site for browsing published stories
+## Why this project is worth a look
 
-## How It Works
+| Area | What it demonstrates |
+|---|---|
+| **Multi-agent orchestration** | 6 specialised agents (discover → research → write → QA → publish → social) with isolated prompts, retries, and graceful degradation |
+| **LLM engineering** | Provider-agnostic client, tolerant JSON parsing, exponential-backoff retries, rate-limit handling, optional MCP tool-use |
+| **Human-in-the-loop design** | Confidence scoring, red-flag surfacing, per-section public-visibility controls, bulk review actions |
+| **Full-stack delivery** | Flask app, SQLite persistence with an in-memory cache layer, gzip middleware, background job runner, SMTP + Mailchimp integration |
+| **Production readiness** | Dockerfile, `render.yaml`, `Procfile`, WSGI entrypoint, health check, env-driven config, optional-dependency soft imports |
 
-The pipeline in this repo follows this flow:
+---
 
-`discovery -> research -> write -> QA -> human approval -> publish -> social assets`
+## Architecture
 
-Main stages:
+```
+              ┌───────────────────────── AI PIPELINE ─────────────────────────┐
+              │                                                               │
+  athlete  →  │  discovery → research → story writer → quality checker        │
+   name       │     │           │            │               │               │
+              │     ▼           ▼            ▼               ▼               │
+              │  queue.json   dossier      sections     confidence + flags    │
+              │              (SQLite +    (10-section                        │
+              │               JSON)        template)                         │
+              └───────────────────────────────┬───────────────────────────────┘
+                                              │
+                              ┌───────────────▼───────────────┐
+                              │       FLASK WEB APP            │
+                              │                                │
+   public reader  ◄───────────┤  /             public home     │
+   (cards, search,            │  /story/<id>   story reader     │
+    bookmarks, submit)        │  /saved        reading list     │
+                              │  /submit       athlete suggest  │
+                              │                                │
+   admin console  ◄───────────┤  /admin        review+pipeline  │
+   (review, approve,          │  /admin/...    subscribers, bulk│
+    bulk actions,             │                actions, jobs   │
+    visibility control)       └───────────────┬────────────────┘
+                                              │
+                          ┌───────────────────▼────────────────────┐
+                          │  PUBLISHING (opt-in via env keys)       │
+                          │  Webflow · Mailchimp · Notion · Supabase│
+                          └─────────────────────────────────────────┘
+```
 
-1. `discovery_agent` finds athlete candidates and stores them in `data/athlete_queue.json`.
-2. `research_agent` builds a dossier in `data/dossiers/` and mirrors it to SQLite.
-3. `story_writer_agent` turns the dossier into structured story sections.
-4. `quality_checker_agent` scores confidence and flags uncertain claims.
-5. The dashboard places stories into `pending_review`, `approved`, `rejected`, or `published`.
-6. `publishing_agent` pushes approved stories to connected services.
+**Pipeline flow:** `discovery → research → write → QA → human approval → publish → social assets`
+
+1. **`discovery_agent`** finds athlete candidates and queues them in `data/athlete_queue.json`.
+2. **`research_agent`** builds a sourced dossier (birth, struggles, turning point, quotes, competitions, outcomes) — mirrored to SQLite, with optional MCP tool-use enrichment.
+3. **`story_writer_agent`** turns the dossier into a structured 10+ section story.
+4. **`quality_checker_agent`** scores editorial confidence and flags unverified claims.
+5. The **admin console** moves stories through `pending_review → approved / rejected → published`.
+6. **`publishing_agent`** pushes approved stories to connected services (all opt-in, best-effort, non-blocking).
+
+---
+
+## Key Features
+
+### AI pipeline
+- **Provider-agnostic LLM client** (`nvidia_client.py`) over an OpenAI-compatible API, with legacy aliases so older imports keep working
+- **Tolerant JSON parsing** — strips markdown fences, repairs malformed model output, retries on rate limits with exponential backoff
+- **Per-agent prompt files** in `prompts/` — research, story writing, QA, and social assets are independently tunable
+- **Optional MCP integration** (`mcp_research.py`) for Model Context Protocol tool-use during research
+- **Independently configurable models** — research and story-writing models set via separate env vars
+
+### Admin console
+- **Review queue** with confidence scores, QA red flags, and uncertain-fact surfacing
+- **Bulk actions** — approve / reject / unpublish many stories at once
+- **Per-section public visibility** — hide any of 21 story sections from the public reader without deleting content; one-click presets (Show all / Story only / Minimal)
+- **Inline metadata editing** — fix athlete name, sport, country without re-running the pipeline
+- **Live job runner** — background pipeline jobs with real-time progress, step tracking, and auto-refresh
+- **Research dossier viewer** with field-coverage scoring and re-research using a different model
+- **Subscriber management** — add, export CSV, resend welcome emails, broadcast updates
+
+### Public site
+- Responsive home with **live search**, sport filters, and lazy-loaded story cards
+- Distraction-free **story reader** — reading-progress bar, real reading-time estimate, country flags, bookmark/save, highlight-to-share
+- **`/saved`** — a personal reading list (localStorage, no login required)
+- **`/submit`** — community submission form for suggesting athletes
+- **Newsletter capture** — floating pill, inline CTA, dark-mode toggle
+
+### Engineering
+- **SQLite persistence** with an mtime-keyed in-memory cache layer for `list_stories()`
+- **gzip middleware** — compresses HTML/JSON responses ~70%
+- **Aggressive media caching** — athlete photos served with 30-day immutable cache headers
+- **Visit analytics** — privacy-respecting (hashed IP) page-view tracking
+- **SMTP mailer** — HTML welcome emails and admin broadcasts
+- **Graceful degradation** — optional integrations (Notion, Supabase, MCP) soft-import and no-op when unconfigured
+
+---
 
 ## Tech Stack
 
-- Python
-- Flask
-- SQLite plus JSON file storage
-- NVIDIA OpenAI-compatible API for research and story generation
-- Optional integrations: Supabase, Webflow, Mailchimp, Notion
-- Waitress / Gunicorn for deployment
+| Layer | Choice |
+|---|---|
+| Language | Python 3.10+ |
+| Web framework | Flask |
+| Persistence | SQLite (+ human-readable JSON backups), optional Supabase |
+| LLM | OpenAI-compatible API (NVIDIA-hosted models) |
+| Email | SMTP + optional Mailchimp |
+| Publishing | Webflow, Notion (all optional) |
+| Serving | Waitress / Gunicorn |
+| Deploy | Docker, Render, Fly, Railway, or any WSGI host |
 
-## Project Structure
+---
 
-```text
-.
-|-- scripts/
-|   |-- dashboard/          # Flask app, templates, admin/public views
-|   |-- pipeline/           # Discovery, research, writing, QA, publishing
-|   `-- utils/              # Storage, DB, API clients, helpers
-|-- data/
-|   |-- dossiers/           # Research dossiers
-|   |-- stories/            # Generated story JSON files
-|   |-- images/             # Downloaded or uploaded athlete images
-|   |-- athlete_queue.json  # Candidate queue
-|   `-- neverquit.sqlite    # Local database
-|-- prompts/                # Prompt templates used by agents
-|-- docs/                   # Deployment and architecture notes
-|-- site/                   # Static assets for the public site
-|-- wsgi.py                 # Production entrypoint
-`-- requirements.txt
-```
-
-## Local Development
-
-### 1. Install dependencies
+## Quickstart
 
 ```bash
-pip install -r requirements.txt
+# 1. Clone
+git clone https://github.com/Abhishek9124/NeverQuit-AI-Assisted-Athlete-Storytelling-Platform.git
+cd NeverQuit-AI-Assisted-Athlete-Storytelling-Platform
+
+# 2. Virtual environment
+python -m venv venv
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # macOS / Linux
+
+# 3. Install core dependencies
+pip install flask python-dotenv openai requests tenacity json-repair Pillow waitress
+
+# 4. Configure environment
+cp .env.example .env           # then edit — see below
+
+# 5. Run
+python wsgi.py                 # development
+# waitress-serve --listen=0.0.0.0:5000 wsgi:app   # production-style
 ```
 
-### 2. Create environment file
+Open **http://localhost:5000** (public site) and **http://localhost:5000/admin** (console).
 
-```bash
-cp .env.example .env
+### Minimum `.env`
+
+```ini
+NVIDIA_API_KEY=your-key-here
+NVIDIA_STORY_MODEL=openai/gpt-oss-20b
+NVIDIA_MODEL=nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
+ADMIN_TOKEN=choose-a-secret     # leave blank for open dev mode
+FLASK_SECRET=any-random-string
 ```
 
-At minimum, set:
+Everything else in `.env.example` (SMTP, Mailchimp, Webflow, Notion, Supabase) is
+**optional** — the app boots and runs without any of it.
 
-- `NVIDIA_API_KEY`
-- `ADMIN_TOKEN`
-- `FLASK_SECRET`
-
-Recommended model defaults from this repo:
-
-- `NVIDIA_MODEL=nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`
-- `NVIDIA_STORY_MODEL=openai/gpt-oss-20b`
-
-### 3. Run the app
-
-For development:
-
-```bash
-python wsgi.py
-```
-
-For production-style local runs:
-
-```bash
-waitress-serve --listen=0.0.0.0:5000 wsgi:app
-```
-
-Then open:
-
-- Public site: `http://localhost:5000`
-- Admin dashboard: `http://localhost:5000/admin`
-
-If `ADMIN_TOKEN` is set, use it to sign in.
+---
 
 ## Running the Pipeline
 
-Run a single athlete:
-
 ```bash
+# Full end-to-end run for one athlete
 python scripts/pipeline/run_pipeline.py --athlete "Neeraj Chopra" --sport "Javelin"
-```
 
-Run the daily queue:
-
-```bash
+# Process the daily queue
 python scripts/pipeline/run_pipeline.py --quota 1
-```
 
-Dry run without auto-publishing:
-
-```bash
+# Dry run — generate without auto-publishing
 python scripts/pipeline/run_pipeline.py --quota 1 --dry-run
 ```
 
-## Admin Dashboard
+Or drive it from the admin console: **`/admin` → Research → enter a name → Write story → Review → Approve**.
+Stories land in `data/stories/` as JSON and mirror to `data/neverquit.sqlite`.
 
-The Flask app in `scripts/dashboard/app.py` provides:
+---
 
-- Public homepage and story pages
-- Admin login
-- Approval queue
-- Research-only dossier generation
-- Story review and publishing actions
-- Background job progress tracking
-- Photo replacement for dossiers and stories
+## Project Structure
 
-Important routes:
+```
+scripts/
+├── dashboard/
+│   ├── app.py              # Flask app — routes, admin console, job runner
+│   ├── seed_stories.py     # demo stories shown before the DB is populated
+│   └── templates/          # Jinja2 templates (public + admin)
+├── pipeline/
+│   ├── discovery_agent.py        # finds athlete candidates
+│   ├── research_agent.py         # builds sourced dossiers
+│   ├── story_writer_agent.py     # dossier → structured story
+│   ├── quality_checker_agent.py  # confidence scoring + fact flags
+│   ├── publishing_agent.py       # pushes to external services
+│   ├── social_asset_generator.py
+│   └── run_pipeline.py           # end-to-end orchestrator
+└── utils/
+    ├── nvidia_client.py    # provider-agnostic LLM client
+    ├── db.py               # SQLite layer
+    ├── storage.py          # JSON store + mtime-keyed cache
+    ├── mailer.py           # SMTP welcome emails + broadcasts
+    ├── image_fetcher.py    # athlete photo lookup
+    ├── country_flags.py    # ISO code + flag helpers
+    └── mcp_research.py     # optional MCP tool-use
+prompts/                    # per-agent prompt files
+templates/story_template.json
+docs/                       # architecture, deployment, DB-choice notes
+data/                       # SQLite DB, story JSON, images (gitignored)
+```
 
-- `/`
-- `/story/<id>`
-- `/admin`
-- `/admin/run-discovery`
-- `/admin/run-pipeline`
-- `/admin/research`
-- `/healthz`
+### Important routes
+
+| Route | Purpose |
+|---|---|
+| `/` | Public home — search, filters, story cards |
+| `/story/<id>` | Story reader |
+| `/saved` · `/submit` | Reading list · community submission form |
+| `/admin` | Admin console — review queue, pipeline tools, live jobs |
+| `/admin/run-research` · `/admin/run-pipeline` | Trigger pipeline stages |
+| `/admin/subscribers` | Newsletter management + broadcasts |
+| `/healthz` | Health check |
+
+---
 
 ## Data Storage
 
-This project uses a hybrid local storage model:
+A hybrid local model:
 
-- JSON files are written to `data/stories/` and `data/dossiers/`
-- SQLite lives at `data/neverquit.sqlite`
-- Queue state lives in `data/athlete_queue.json`
+- **JSON files** in `data/stories/` and `data/dossiers/` — human-readable backups, source of truth for the cache
+- **SQLite** at `data/neverquit.sqlite` — query-friendly persistence, mirrored on every write
+- **Queue state** in `data/athlete_queue.json`
 
-The JSON files are human-readable backups, while SQLite is used for query-friendly persistence.
+Rationale for SQLite over a hosted DB is documented in `docs/database_choice.md`.
+
+---
 
 ## Environment Variables
 
-### Core
+**Core** — `NVIDIA_API_KEY`, `NVIDIA_MODEL`, `NVIDIA_STORY_MODEL`, `ADMIN_TOKEN`, `FLASK_SECRET`, `PORT`
 
-- `NVIDIA_API_KEY`
-- `NVIDIA_MODEL`
-- `NVIDIA_STORY_MODEL`
-- `ADMIN_TOKEN`
-- `FLASK_SECRET`
-- `PORT`
+**Pipeline tuning** — `DAILY_STORY_QUOTA`, `MIN_CONFIDENCE_SCORE`, `AUTO_APPROVE_THRESHOLD`, `NVIDIA_MIN_INTERVAL_S`, `NVIDIA_MAX_CONCURRENT`
 
-### Optional publishing/integration keys
+**Optional integrations** — `SMTP_*`, `MAILCHIMP_*`, `WEBFLOW_*`, `NOTION_*`, `SUPABASE_*`
 
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_KEY`
-- `WEBFLOW_API_KEY`
-- `WEBFLOW_COLLECTION_ID`
-- `WEBFLOW_SITE_ID`
-- `MAILCHIMP_API_KEY`
-- `MAILCHIMP_AUDIENCE_ID`
-- `MAILCHIMP_SERVER_PREFIX`
-- `NOTION_TOKEN`
-- `NOTION_DATABASE_ID`
+See `.env.example` for the full annotated list.
 
-### Pipeline tuning
-
-- `DAILY_STORY_QUOTA`
-- `MIN_CONFIDENCE_SCORE`
-- `AUTO_APPROVE_THRESHOLD`
-- `NVIDIA_MIN_INTERVAL_S`
-- `NVIDIA_MAX_CONCURRENT`
+---
 
 ## Deployment
 
-This repo already includes deployment assets:
+The repo ships with `Dockerfile`, `render.yaml`, `Procfile`, and `wsgi.py`.
 
-- `Dockerfile`
-- `Procfile`
-- `render.yaml`
-- `wsgi.py`
+```bash
+# Docker
+docker build -t neverquit .
+docker run -p 5000:5000 --env-file .env neverquit
 
-The app is designed to run as a single Flask service serving both the public site and the admin console.
+# Any WSGI host
+waitress-serve --listen=0.0.0.0:5000 wsgi:app
+```
 
-## Current Repository State
+The app runs as a **single Flask service** serving both the public site and the admin console. See `docs/deployment.md` for platform-specific notes.
 
-The repo already contains:
+---
 
-- Sample dossiers and stories under `data/`
-- A working Flask dashboard
-- Prompt files for research, writing, QA, and social assets
-- Deployment notes in `docs/`
+## Design Decisions & Trade-offs
 
-That makes it suitable both as a working prototype and as a base for expanding into a fuller editorial publishing system.
+- **SQLite over Postgres** — single-file persistence keeps the project portable and zero-config; the `db.py` layer is thin enough to swap later.
+- **JSON + SQLite dual write** — JSON files are human-readable backups; SQLite powers fast queries.
+- **Human-in-the-loop by default** — no story auto-publishes. Confidence scores and red flags *inform* the editor; they don't replace them.
+- **Optional integrations soft-import** — the app never crashes because Notion or Supabase isn't installed; missing services simply no-op.
+- **Provider-agnostic LLM layer** — swapping models or providers is an env-var change, not a code change.
+- **Best-effort publishing** — if one publishing target fails, the others still run.
 
-## Useful Docs
+---
 
-- `docs/pipeline_architecture.md`
-- `docs/deployment.md`
-- `docs/approval_dashboard_guide.md`
-- `docs/database_choice.md`
+## Docs
+
+- `docs/pipeline_architecture.md` — agent flow in detail
+- `docs/deployment.md` — platform-specific deploy notes
+- `docs/approval_dashboard_guide.md` — admin console walkthrough
+- `docs/database_choice.md` — why SQLite
+
+---
 
 ## Notes
 
-- Translation is present in the code structure, but the current orchestrator is effectively English-only.
-- Publishing integrations are best-effort and do not block other publishing targets if one fails.
-- If `ADMIN_TOKEN` is empty, the admin interface is effectively open in local development mode.
+- Translation scaffolding exists in the codebase, but the current orchestrator is effectively English-only.
+- If `ADMIN_TOKEN` is empty, the admin interface is open in local development mode.
+
+---
+
+## License
+
+This project is for portfolio and educational purposes.

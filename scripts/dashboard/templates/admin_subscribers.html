@@ -65,6 +65,10 @@ textarea:focus{border-color:#D85A30;outline:none;}
               <td style="color:var(--color-text-tertiary);font-size:12px;">{{ s.created_at[:10] }}</td>
               <td style="text-align:right;">
                 {% if not s.unsubscribed %}
+                <form method="post" action="/admin/subscribers/resend" style="display:inline;">
+                  <input type="hidden" name="email" value="{{ s.email }}">
+                  <button class="btn btn-ghost" style="height:26px;padding:0 10px;font-size:11px;" type="submit" title="Resend welcome email">✉ Resend</button>
+                </form>
                 <form method="post" action="/admin/subscribers/remove" style="display:inline;">
                   <input type="hidden" name="email" value="{{ s.email }}">
                   <button class="btn btn-ghost" style="height:26px;padding:0 10px;font-size:11px;" type="submit">Unsubscribe</button>

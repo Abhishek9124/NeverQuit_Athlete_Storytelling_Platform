@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Submit an athlete · {{ site }}{% endblock %}
+{% block content %}
+<style>
+.wrap{max-width:680px;margin:0 auto;padding:48px 24px;}
+.eyebrow{font-size:11px;font-weight:600;color:#993C1D;background:#FAECE7;padding:5px 14px;border-radius:30px;display:inline-block;margin-bottom:18px;letter-spacing:.04em;text-transform:uppercase;}
+h1{font-family:var(--font-serif);font-size:48px;font-weight:500;line-height:1.1;letter-spacing:-0.025em;margin-bottom:14px;color:#1a1a1a;}
+h1 em{color:#D85A30;font-style:normal;}
+.sub{font-size:16px;color:var(--color-text-secondary);line-height:1.55;margin-bottom:36px;}
+form{background:#FAF9F5;border:1px solid var(--color-border-tertiary);border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:14px;}
+label{font-size:11px;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.08em;}
+input,textarea{background:#fff;border:1px solid var(--color-border-secondary);border-radius:8px;padding:10px 14px;font-size:14px;font-family:inherit;color:var(--color-text-primary);outline:none;width:100%;}
+input:focus,textarea:focus{border-color:#D85A30;box-shadow:0 0 0 3px rgba(216,90,48,.12);}
+textarea{min-height:140px;resize:vertical;line-height:1.55;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:520px){.row{grid-template-columns:1fr;}}
+.btn-submit{height:48px;background:#1a1a1a;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-submit:hover{background:#D85A30;}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed;background:#1a1a1a;}
+.success{padding:24px;background:#E1F5EE;border:1px solid #085041;border-radius:12px;color:#085041;text-align:center;}
+.success strong{font-family:var(--font-serif);font-size:20px;display:block;margin-bottom:6px;}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">💡 Suggest a story</div>
+  <h1>Know an athlete <em>worth covering?</em></h1>
+  <p class="sub">Tell us about a real athlete, Paralympian, or differently-abled individual who refused to stop. We read every submission — the best ones get researched, written, and published.</p>
+
+  <form id="submit-form" onsubmit="submitAthlete(event)">
+    <div>
+      <label>Athlete name *</label>
+      <input type="text" name="athlete_name" placeholder="e.g. Sheetal Devi" required maxlength="120">
+    </div>
+    <div class="row">
+      <div>
+        <label>Sport</label>
+        <input type="text" name="sport" placeholder="e.g. Para Archery" maxlength="60">
+      </div>
+      <div>
+        <label>Country</label>
+        <input type="text" name="country" placeholder="e.g. India" maxlength="60">
+      </div>
+    </div>
+    <div>
+      <label>Why is this story worth telling? *</label>
+      <textarea name="why" placeholder="What did they overcome? When did the comeback happen? Why does this story matter? (min 30 chars)" required minlength="30" maxlength="2000"></textarea>
+    </div>
+    <div>
+      <label>Your email (optional — we'll let you know when the story is live)</label>
+      <input type="email" name="email" placeholder="you@example.com" maxlength="200">
+    </div>
+    <button type="submit" class="btn-submit">Send submission →</button>
+  </form>
+
+  <div id="success" class="success" style="display:none;margin-top:24px;">
+    <strong>Thank you ✓</strong>
+    Your submission is queued for editorial review. We'll get back to you within a week.
+  </div>
+</div>
+
+<script>
+async function submitAthlete(ev){
+  ev.preventDefault();
+  const form = ev.target;
+  const btn = form.querySelector('button');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const fd = new FormData(form);
+    const r = await fetch('/api/submit', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (j.ok) {
+      form.style.display = 'none';
+      document.getElementById('success').style.display = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      btn.textContent = j.error || 'Try again';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.textContent = 'Retry';
+    btn.disabled = false;
+  }
+}
+</script>
+{% endblock %}

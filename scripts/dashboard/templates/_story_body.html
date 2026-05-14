@@ -116,12 +116,20 @@
   </div>
   {% endif %}
 
+  {# Estimate reading time from actual word count — 220 wpm. #}
+  {% set total_words = namespace(n=0) %}
+  {% for k in ['into_you','hook','world_came_from','darkest_moment','turning_point','the_grind','outcome','inner_reframe','why_this_works','pull_quote'] %}
+    {% if sections.get(k) %}{% set total_words.n = total_words.n + (sections.get(k)|string).split()|length %}{% endif %}
+  {% endfor %}
+  {% set read_min = ([1, (total_words.n / 220)|round(0, 'ceil')|int]|max) %}
+
   <div class="r-tags">
     {% if s.is_seed %}<span class="badge" style="background:#1a1a1a;color:#FAECE0;">Demo</span>{% endif %}
     {% if 'para' in (s.sport or '')|lower %}<span class="badge b-para">Para athlete</span>{% else %}<span class="badge b-athlete">Athlete</span>{% endif %}
     {% if s.sport %}<span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);">{{ s.sport }}</span>{% endif %}
     {% if s.country %}<span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);">{{ flag(s.country) }} {{ s.country }}</span>{% endif %}
-    <span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);">6 min read</span>
+    <span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);">⏱ {{ read_min }} min read</span>
+    <span class="badge" id="bookmark-btn" onclick="toggleBookmark()" style="background:var(--color-background-secondary);color:var(--color-text-secondary);cursor:pointer;user-select:none;">🔖 Save</span>
   </div>
 
   <div class="r-title">{% if sections.headline %}{{ sections.headline }}{% else %}{{ s.athlete_name }}{% endif %}</div>
@@ -137,32 +145,63 @@
 
   <div class="r-divider"></div>
 
-  {# ── First prose block ── #}
-  {% if sections.into_you or sections.hook or sections.world_came_from %}
+  {# ── Key facts box ── populated from the dossier outcomes if present ── #}
+  {% set key_facts = (s.dossier.outcomes if s.dossier and s.dossier.outcomes else [])[:3] %}
+  {% if key_facts and vis(s, 'key_facts') %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:6px 0 22px;">
+    {% for f in key_facts %}
+    <div style="background:#FAECE7;border-left:3px solid #D85A30;padding:10px 14px;font-size:12px;line-height:1.5;color:#712B13;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#D85A30;margin-bottom:4px;">Fact {{ loop.index }}</div>
+      {{ f }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# ── First prose block (each section toggleable) ── #}
+  {% set show_intro = (sections.into_you and vis(s,'into_you')) or (sections.hook and vis(s,'hook')) or (sections.world_came_from and vis(s,'world_came_from')) %}
+  {% if show_intro %}
   <div class="r-body">
-    {% if sections.into_you %}<p>{{ sections.into_you }}</p>{% endif %}
-    {% if sections.hook %}<p>{{ sections.hook }}</p>{% endif %}
-    {% if sections.world_came_from %}<p>{{ sections.world_came_from }}</p>{% endif %}
+    {% if sections.into_you and vis(s,'into_you') %}<p>{{ sections.into_you }}</p>{% endif %}
+    {% if sections.hook and vis(s,'hook') %}<p>{{ sections.hook }}</p>{% endif %}
+    {% if sections.world_came_from and vis(s,'world_came_from') %}<p>{{ sections.world_came_from }}</p>{% endif %}
   </div>
   {% endif %}
 
   {# ── Pull quote ── #}
-  {% if sections.pull_quote %}
+  {% if sections.pull_quote and vis(s,'pull_quote') %}
   <div class="pullquote"><p>"{{ sections.pull_quote }}"</p></div>
   {% endif %}
 
   {# ── Second prose block ── #}
-  {% if sections.darkest_moment or sections.turning_point or sections.the_grind or sections.outcome %}
+  {% set show_mid = (sections.darkest_moment and vis(s,'darkest_moment')) or (sections.turning_point and vis(s,'turning_point')) or (sections.the_grind and vis(s,'the_grind')) or (sections.outcome and vis(s,'outcome')) %}
+  {% if show_mid %}
   <div class="r-body">
-    {% if sections.darkest_moment %}<p>{{ sections.darkest_moment }}</p>{% endif %}
-    {% if sections.turning_point %}<p>{{ sections.turning_point }}</p>{% endif %}
-    {% if sections.the_grind %}<p>{{ sections.the_grind }}</p>{% endif %}
-    {% if sections.outcome %}<p>{{ sections.outcome }}</p>{% endif %}
+    {% if sections.darkest_moment and vis(s,'darkest_moment') %}<p>{{ sections.darkest_moment }}</p>{% endif %}
+    {% if sections.turning_point and vis(s,'turning_point') %}<p>{{ sections.turning_point }}</p>{% endif %}
+    {% if sections.the_grind and vis(s,'the_grind') %}<p>{{ sections.the_grind }}</p>{% endif %}
+    {% if sections.outcome and vis(s,'outcome') %}<p>{{ sections.outcome }}</p>{% endif %}
+  </div>
+  {% endif %}
+
+  {# ── Inner reframe ── #}
+  {% if sections.inner_reframe and vis(s,'inner_reframe') %}
+  <div class="tl-box" style="background:#FAEEDA;border-color:#F0D484;">
+    <div class="box-title">When it's you vs. you</div>
+    <div style="font-style:italic;color:#633806;line-height:1.6;font-size:14px;">{{ sections.inner_reframe }}</div>
+  </div>
+  {% endif %}
+
+  {# ── Why this works ── #}
+  {% if sections.why_this_works and vis(s,'why_this_works') %}
+  <div class="r-body" style="padding:14px 18px;background:var(--color-background-secondary);border-left:3px solid #3C3489;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;">
+    <div class="box-title">Why this works</div>
+    <p style="font-size:13px;line-height:1.7;margin-bottom:0;">{{ sections.why_this_works }}</p>
   </div>
   {% endif %}
 
   {# ── Comeback timeline ── #}
-  {% if sections.comeback_timeline %}
+  {% if sections.comeback_timeline and vis(s,'comeback_timeline') %}
   <div class="tl-box">
     <div class="box-title">The comeback timeline</div>
     {% for t in sections.comeback_timeline %}
@@ -177,13 +216,13 @@
   {% endif %}
 
   {# ── Takeaways + goal box ── #}
-  {% if sections.lessons %}
+  {% if sections.lessons and vis(s,'lessons') %}
   <div class="takeaway-box">
     <div class="box-title">What you can take from {{ s.athlete_name.split()[0] }}'s story</div>
     {% for l in sections.lessons %}
       <div class="tk-row"><div class="tk-dot"></div><span>{{ l }}</span></div>
     {% endfor %}
-    {% if sections.goal_box_prompt %}
+    {% if sections.goal_box_prompt and vis(s,'goal_box_prompt') %}
     <div class="goal-box" style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;margin-top:14px;">
       <div class="box-title">Set your own goal from this story</div>
       <div class="goal-input-row">
@@ -195,7 +234,15 @@
   </div>
   {% endif %}
 
+  {# ── Ask yourself ── #}
+  {% if sections.ask_yourself and vis(s,'ask_yourself') %}
+  <div class="pullquote" style="background:#EEEDFE;border-color:#3C3489;">
+    <p style="color:#3C3489;">{{ sections.ask_yourself }}</p>
+  </div>
+  {% endif %}
+
   {# ── Share box ── #}
+  {% if vis(s,'share') %}
   <div class="share-box">
     <div class="box-title">Share this story</div>
     <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;">Someone you know needs to read this today.</div>
@@ -206,8 +253,22 @@
       <span class="share-btn">Instagram story</span>
     </div>
   </div>
+  {% endif %}
 
-  {% if related %}
+  {# ── Inline newsletter CTA ── #}
+  {% if vis(s,'newsletter_cta') %}
+  <div style="background:linear-gradient(135deg,#1a1a1a 0%,#2a2a2a 100%);color:#FAF8F2;border-radius:var(--border-radius-lg);padding:32px 28px;margin:28px 0;text-align:center;">
+    <div style="font-size:11px;font-weight:600;color:#D85A30;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;">One story · every Monday</div>
+    <h3 style="font-family:var(--font-serif);font-size:24px;font-weight:500;line-height:1.25;margin-bottom:8px;">Read one comeback you'll remember.</h3>
+    <p style="font-size:14px;color:#A8A69D;line-height:1.55;margin-bottom:18px;max-width:420px;margin-inline:auto;">No noise. No motivational posters. Just one specific, vivid, true story.</p>
+    <form onsubmit="nlInline(event)" style="display:flex;gap:8px;max-width:380px;margin:0 auto;">
+      <input type="email" name="email" placeholder="you@example.com" required style="flex:1;height:38px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;border-radius:8px;padding:0 14px;font-size:13px;outline:none;font-family:inherit;">
+      <button type="submit" style="height:38px;padding:0 18px;background:#D85A30;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Subscribe</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if related and vis(s,'related') %}
   <div class="more-head">More comebacks worth your time</div>
   <div class="mgrid">
     {% for c in related %}
@@ -223,12 +284,64 @@
 </div>
 
 <script>
-// 1) Reading progress bar
+// 1) Reading progress bar — throttled with rAF
 (function(){
   const bar=document.getElementById('rp');
-  function tick(){const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=max?Math.min(100,(h.scrollTop/max)*100)+'%':'0';}
-  document.addEventListener('scroll',tick,{passive:true});tick();
+  let ticking=false;
+  function update(){
+    const h=document.documentElement;
+    const max=h.scrollHeight-h.clientHeight;
+    bar.style.width=max?Math.min(100,(h.scrollTop/max)*100)+'%':'0';
+    ticking=false;
+  }
+  document.addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(update);ticking=true;}},{passive:true});
+  update();
 })();
+
+// 1b) Bookmark / save-for-later
+function toggleBookmark(){
+  const KEY='nq_bookmarks_v1', sid="{{ s.story_id }}";
+  if(!sid) return;
+  let bm=[]; try{bm=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+  const btn=document.getElementById('bookmark-btn');
+  if (bm.includes(sid)) {
+    bm = bm.filter(x => x !== sid);
+    btn.textContent='🔖 Save';
+    btn.style.background='var(--color-background-secondary)';
+    btn.style.color='var(--color-text-secondary)';
+  } else {
+    bm.push(sid);
+    btn.textContent='✓ Saved';
+    btn.style.background='#FAECE7';
+    btn.style.color='#712B13';
+  }
+  localStorage.setItem(KEY, JSON.stringify(bm));
+}
+(function(){
+  const KEY='nq_bookmarks_v1', sid="{{ s.story_id }}";
+  try {
+    const bm = JSON.parse(localStorage.getItem(KEY)||'[]');
+    if (sid && bm.includes(sid)) {
+      const btn = document.getElementById('bookmark-btn');
+      if (btn) { btn.textContent='✓ Saved'; btn.style.background='#FAECE7'; btn.style.color='#712B13'; }
+    }
+  } catch(e){}
+})();
+
+// 1c) Inline newsletter capture
+async function nlInline(ev){
+  ev.preventDefault();
+  const form=ev.target, btn=form.querySelector('button'), email=form.email.value;
+  btn.textContent='Sending…'; btn.disabled=true;
+  try {
+    const fd=new FormData(); fd.append('email',email); fd.append('source','story_inline');
+    const r=await fetch('/api/subscribe',{method:'POST',body:fd});
+    const j=await r.json();
+    btn.textContent=j.ok?'Subscribed ✓':'Try Again';
+    if(j.ok){localStorage.setItem('nq_subscribed','1');form.email.disabled=true;}
+    else btn.disabled=false;
+  } catch(e){btn.textContent='Retry';btn.disabled=false;}
+}
 
 // 2) Scroll-triggered fade-in for prose blocks
 (function(){

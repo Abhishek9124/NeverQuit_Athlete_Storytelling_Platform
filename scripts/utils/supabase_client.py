@@ -1,10 +1,15 @@
 """Supabase client + pgvector helpers."""
 from __future__ import annotations
 import os
-from supabase import create_client
+try:
+    from supabase import create_client  # type: ignore
+except Exception:
+    create_client = None  # package not installed — module no-ops below
 
 
 def client():
+    if create_client is None:
+        return None
     url = os.getenv("SUPABASE_URL")
     key = os.getenv("SUPABASE_SERVICE_KEY")
     if not (url and key):

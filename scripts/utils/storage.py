@@ -1,6 +1,7 @@
 """File-based queue + story storage. Swap for Supabase in production via supabase_client."""
 from __future__ import annotations
 import json
+import threading
 from pathlib import Path
 from datetime import datetime
 
@@ -9,6 +10,12 @@ DATA = ROOT / "data"
 STORIES = DATA / "stories"
 STORIES.mkdir(parents=True, exist_ok=True)
 QUEUE = DATA / "athlete_queue.json"
+
+# ─── In-memory cache for list_stories() ───
+# `list_stories()` was re-reading every JSON file on every request, dominating
+# home-page render time. We cache parsed payloads keyed by (path, mtime).
+_cache: dict[Path, tuple[float, dict]] = {}
+_cache_lock = threading.Lock()
 
 
 def load_queue() -> dict:
@@ -44,6 +51,7 @@ def save_story(story_id: str, payload: dict) -> Path:
             payload["image_url"] = payload["dossier"]["image_url"]
     p = STORIES / f"{story_id}.json"
     p.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    _invalidate_cache(p)
     # Mirror to SQLite (best-effort).
     try:
         from scripts.utils import db
@@ -61,19 +69,40 @@ def load_story(story_id: str) -> dict:
 
 
 def list_stories(status: str | None = None) -> list[dict]:
+    """Cached list of stories. Re-parses a JSON file only if its mtime changed."""
     out = []
-    for p in sorted(STORIES.glob("*.json")):
-        try:
-            s = json.loads(p.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        if isinstance(s, list):
-            s = s[0] if (s and isinstance(s[0], dict)) else None
-        if not isinstance(s, dict):
-            continue
-        if status is None or s.get("status") == status:
-            out.append(s)
+    paths = sorted(STORIES.glob("*.json"))
+    with _cache_lock:
+        for p in paths:
+            try:
+                mtime = p.stat().st_mtime
+            except OSError:
+                continue
+            cached = _cache.get(p)
+            if cached and cached[0] == mtime:
+                s = cached[1]
+            else:
+                try:
+                    s = json.loads(p.read_text(encoding="utf-8"))
+                except Exception:
+                    continue
+                if isinstance(s, list):
+                    s = s[0] if (s and isinstance(s[0], dict)) else None
+                if not isinstance(s, dict):
+                    continue
+                _cache[p] = (mtime, s)
+            if status is None or s.get("status") == status:
+                out.append(s)
+        # Drop entries whose files no longer exist
+        live = set(paths)
+        for stale in [k for k in _cache.keys() if k not in live]:
+            _cache.pop(stale, None)
     return out
+
+
+def _invalidate_cache(p: Path) -> None:
+    with _cache_lock:
+        _cache.pop(p, None)
 
 
 def update_story(story_id: str, **fields) -> dict:

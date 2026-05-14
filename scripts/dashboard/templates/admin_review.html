@@ -163,6 +163,60 @@
 </div>
 {% endif %}
 
+{# ─── Public visibility controls ─── #}
+{% set hidden = s.hidden_sections or [] %}
+<div style="background:#fff;border-bottom:1px solid var(--color-border-tertiary);padding:24px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;margin-bottom:18px;">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#993C1D;background:#FAECE7;padding:4px 12px;border-radius:30px;display:inline-block;margin-bottom:10px;letter-spacing:.04em;text-transform:uppercase;">👁 Public visibility</div>
+      <h3 style="font-family:Georgia,serif;font-size:22px;font-weight:500;letter-spacing:-0.01em;margin-bottom:4px;">What does the public see?</h3>
+      <div style="font-size:13px;color:var(--color-text-secondary);">Uncheck any section to hide it from the public reader — the content stays in the database. <strong style="color:#D85A30;">{{ hidden|length }}</strong> hidden, <strong style="color:#085041;">{{ (SECTION_KEYS|length) - (hidden|length) }}</strong> visible.</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-right:4px;">Presets:</span>
+      <form method="post" action="/admin/story/{{ s.story_id }}/visibility/preset" style="display:inline;"><input type="hidden" name="preset" value="all"><button class="btn btn-ghost" style="height:30px;font-size:11px;padding:0 10px;" type="submit">Show all</button></form>
+      <form method="post" action="/admin/story/{{ s.story_id }}/visibility/preset" style="display:inline;"><input type="hidden" name="preset" value="reader_only"><button class="btn btn-ghost" style="height:30px;font-size:11px;padding:0 10px;" type="submit">Story only</button></form>
+      <form method="post" action="/admin/story/{{ s.story_id }}/visibility/preset" style="display:inline;"><input type="hidden" name="preset" value="minimal"><button class="btn btn-ghost" style="height:30px;font-size:11px;padding:0 10px;" type="submit">Minimal</button></form>
+    </div>
+  </div>
+
+  <form method="post" action="/admin/story/{{ s.story_id }}/visibility" id="vis-form">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:14px;">
+      {% set labels = {
+        'key_facts':'🎯 Key Facts strip',
+        'into_you':'1. Into you (opener)',
+        'hook':'2. Hook (3 sentences)',
+        'world_came_from':'3. World they came from',
+        'pull_quote':'💬 Pull quote',
+        'darkest_moment':'4. Darkest moment',
+        'turning_point':'5. Turning point',
+        'the_grind':'6. The grind',
+        'outcome':'7. Outcome',
+        'inner_reframe':'🪞 Inner reframe',
+        'why_this_works':'🔬 Why this works',
+        'comeback_timeline':'📅 Comeback timeline',
+        'lessons':'✓ Lessons / takeaways',
+        'goal_box_prompt':'🎯 Goal box',
+        'tiny_practices':'🔁 Tiny practices',
+        'body_protocol':'💪 Body protocol',
+        'two_minute_actions':'⚡ Two-minute actions',
+        'ask_yourself':'❓ Ask yourself',
+        'share':'📤 Share buttons',
+        'newsletter_cta':'✉ Newsletter CTA',
+        'related':'➕ Related stories'
+      } %}
+      {% for key in SECTION_KEYS %}
+      <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:8px;cursor:pointer;font-size:13px;transition:border-color .15s;">
+        <input type="checkbox" name="visible" value="{{ key }}" {% if key not in hidden %}checked{% endif %} style="margin:0;flex-shrink:0;">
+        <span>{{ labels.get(key, key) }}</span>
+      </label>
+      {% endfor %}
+    </div>
+    <button type="submit" class="btn" style="background:#1a1a1a;color:#fff;">💾 Save visibility</button>
+    <a class="btn btn-ghost" href="/story/{{ s.story_id }}" target="_blank" style="margin-left:6px;">👁 Preview as visitor</a>
+  </form>
+</div>
+
 <div class="story-section">
   {% include "_story_body.html" %}
 </div>

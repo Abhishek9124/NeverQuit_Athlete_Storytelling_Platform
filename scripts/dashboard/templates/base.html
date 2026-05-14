@@ -101,6 +101,8 @@ select{height:34px;border:0.5px solid var(--color-border-secondary);border-radiu
   </a>
   <div class="nav-tabs">
     <a href="/" class="tab {% block tab_home %}{% endblock %}">Home</a>
+    <a href="/saved" class="tab {% block tab_saved %}{% endblock %}">🔖 Saved</a>
+    <a href="/submit" class="tab {% block tab_submit %}{% endblock %}">💡 Submit</a>
     {% if is_admin %}
       <a href="/admin" class="tab {% block tab_admin %}{% endblock %}">Admin</a>
       <a href="/admin/subscribers" class="tab {% block tab_subs %}{% endblock %}">📨 Subs</a>
@@ -108,6 +110,7 @@ select{height:34px;border:0.5px solid var(--color-border-secondary);border-radiu
     {% else %}
       <button class="tab" onclick="document.getElementById('admin-login').style.display='flex'">Admin</button>
     {% endif %}
+    <button class="tab" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
   </div>
 </div>
 
@@ -181,4 +184,47 @@ async function nlSubscribe(ev){
 </script>
 {% endif %}
 
+
+<style id="theme-dark" media="not all">
+/* Activated when html[data-theme=dark] */
+html[data-theme=dark]{
+  --color-text-primary:#E8E6DD;
+  --color-text-secondary:#A8A69D;
+  --color-text-tertiary:#7A7870;
+  --color-background-primary:#0F0F0E;
+  --color-background-secondary:#1A1A18;
+  --color-border-secondary:#2E2D2A;
+  --color-border-tertiary:#262522;
+  color-scheme:dark;
+}
+html[data-theme=dark] body{background:var(--color-background-primary);color:var(--color-text-primary);}
+html[data-theme=dark] .nav{background:rgba(15,15,14,0.85);backdrop-filter:blur(12px);}
+html[data-theme=dark] input,html[data-theme=dark] textarea,html[data-theme=dark] select{background:#1A1A18;color:#E8E6DD;border-color:#2E2D2A;}
+html[data-theme=dark] .modal,html[data-theme=dark] form{background:#1A1A18;}
+html[data-theme=dark] .ai-bar,html[data-theme=dark] .preview-banner,html[data-theme=dark] .hero-eyebrow,html[data-theme=dark] .lchip.sel,html[data-theme=dark] .pullquote{background:#2A1D17;color:#FAECE7;}
+</style>
+<script>
+(function(){
+  const stored = localStorage.getItem('nq_theme');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = stored || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+  const style = document.getElementById('theme-dark');
+  if (style) style.media = theme === 'dark' ? 'all' : 'not all';
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = theme === 'dark' ? '☀' : '🌙';
+  });
+})();
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('nq_theme', next);
+  const style = document.getElementById('theme-dark');
+  if (style) style.media = next === 'dark' ? 'all' : 'not all';
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = next === 'dark' ? '☀' : '🌙';
+}
+</script>
 </body></html>

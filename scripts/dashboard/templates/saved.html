@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Your saved stories · {{ site }}{% endblock %}
+{% block content %}
+<style>
+.wrap{max-width:1200px;margin:0 auto;padding:48px 24px;}
+.eyebrow{font-size:11px;font-weight:600;color:#993C1D;background:#FAECE7;padding:5px 14px;border-radius:30px;display:inline-block;margin-bottom:16px;letter-spacing:.04em;text-transform:uppercase;}
+h1{font-family:var(--font-serif);font-size:48px;font-weight:500;line-height:1.1;letter-spacing:-0.025em;margin-bottom:10px;color:#1a1a1a;}
+h1 em{color:#D85A30;font-style:normal;}
+.sub{font-size:16px;color:var(--color-text-secondary);line-height:1.55;margin-bottom:36px;max-width:560px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:24px;}
+.card{background:#fff;border:1px solid var(--color-border-tertiary);border-radius:16px;overflow:hidden;display:block;text-decoration:none;color:inherit;transition:transform .25s, box-shadow .25s, border-color .25s;}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.07);border-color:var(--color-border-secondary);}
+.card-img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:center 25%;background:#EBE9DD;display:block;}
+.card-img-fallback{width:100%;aspect-ratio:16/10;background:linear-gradient(135deg,#FAECE7,#E5C9B7);display:flex;align-items:center;justify-content:center;color:#712B13;font-family:var(--font-serif);font-size:60px;font-weight:600;}
+.card-body{padding:18px 22px;}
+.card-meta{font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:600;}
+.card-title{font-family:var(--font-serif);font-size:20px;font-weight:500;line-height:1.3;margin-bottom:8px;}
+.card-actions{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--color-border-tertiary);font-size:12px;}
+.remove{color:#9B1C1C;cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;background:none;border:none;padding:0;font-family:inherit;}
+.remove:hover{color:#D85A30;}
+.empty{padding:80px 24px;text-align:center;color:var(--color-text-tertiary);background:#FAF9F5;border-radius:16px;border:1px dashed var(--color-border-tertiary);}
+.empty .em{font-family:var(--font-serif);font-size:28px;color:var(--color-text-secondary);margin-bottom:8px;}
+.empty a{color:#D85A30;font-weight:500;}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">🔖 Your reading list</div>
+  <h1>Saved <em>stories</em></h1>
+  <p class="sub">Stories you've bookmarked across the platform. Synced to this browser only — sign up for the newsletter to never lose them.</p>
+
+  <div id="saved-grid" class="grid"></div>
+  <div id="saved-empty" class="empty" style="display:none;">
+    <div class="em">No saved stories yet.</div>
+    <p style="margin-bottom:14px;">Tap the <strong>🔖 Save</strong> button on any story to bookmark it.</p>
+    <a href="/">Browse stories →</a>
+  </div>
+</div>
+
+<script>
+async function loadSaved(){
+  const KEY = 'nq_bookmarks_v1';
+  let bm = [];
+  try { bm = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e){}
+  const grid = document.getElementById('saved-grid');
+  const empty = document.getElementById('saved-empty');
+  if (bm.length === 0){ empty.style.display = ''; return; }
+
+  const results = await Promise.all(bm.map(sid =>
+    fetch(`/api/story/${encodeURIComponent(sid)}.json`).then(r => r.ok ? r.json() : null).catch(() => null)
+  ));
+  const cards = results.filter(Boolean);
+  if (cards.length === 0){ empty.style.display = ''; return; }
+
+  grid.innerHTML = cards.map(c => {
+    const img = c.image_url
+      ? `<img class="card-img" src="${c.image_url}" alt="${c.athlete_name}" loading="lazy" onerror="this.style.display='none'">`
+      : `<div class="card-img-fallback">${(c.athlete_name||'?')[0]}</div>`;
+    return `<div class="card">
+      <a href="/story/${c.id}">${img}<div class="card-body">
+        <div class="card-meta">${c.sport || 'Athletics'}${c.country ? ' · ' + c.country : ''}</div>
+        <div class="card-title">${c.athlete_name}</div>
+      </div></a>
+      <div class="card-body" style="padding-top:0;">
+        <div class="card-actions">
+          <a href="/story/${c.id}" style="color:#D85A30;font-weight:500;">Read →</a>
+          <button class="remove" onclick="removeBookmark('${c.id}')">Remove</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function removeBookmark(sid){
+  const KEY = 'nq_bookmarks_v1';
+  let bm = [];
+  try { bm = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e){}
+  localStorage.setItem(KEY, JSON.stringify(bm.filter(x => x !== sid)));
+  loadSaved();
+}
+loadSaved();
+</script>
+{% endblock %}

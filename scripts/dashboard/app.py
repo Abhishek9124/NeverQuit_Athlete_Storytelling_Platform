@@ -879,6 +879,236 @@ def admin_story_delete(sid):
     return redirect(url_for("admin_home"))
 
 
+# ─── Section visibility (admin controls what the public reader sees) ───
+
+# Canonical list of toggleable section keys. Anything not in this list
+# is always rendered (e.g. title, byline, country flag).
+SECTION_KEYS = [
+    "key_facts",          # the orange highlight tiles (dossier.outcomes)
+    "into_you",           # universal pain-point opener
+    "hook",               # 3-sentence vivid hook
+    "world_came_from",    # origin / family
+    "pull_quote",         # the screenshot line
+    "darkest_moment",     # rock-bottom scene
+    "turning_point",      # the named mentor / moment
+    "the_grind",          # daily training reality
+    "outcome",            # what happened after
+    "comeback_timeline",  # year-by-year box
+    "lessons",            # 3 takeaways
+    "goal_box_prompt",    # reader CTA box
+    "inner_reframe",      # italic lie-vs-truth block
+    "why_this_works",     # research backing
+    "tiny_practices",     # numbered practices list
+    "body_protocol",      # universal recovery basics
+    "two_minute_actions", # 3 reader actions
+    "ask_yourself",       # one question to carry away
+    "share",              # share buttons
+    "newsletter_cta",     # inline newsletter capture
+    "related",            # "more comebacks" carousel
+]
+
+
+def is_visible(s: dict, key: str) -> bool:
+    """A section is visible unless the admin has explicitly hidden it."""
+    hidden = (s or {}).get("hidden_sections") or []
+    return key not in hidden
+
+
+# Expose to all templates as `vis(section_key, story)`
+@app.context_processor
+def _inject_visibility():
+    return {"vis": is_visible, "SECTION_KEYS": SECTION_KEYS}
+
+
+@app.route("/admin/story/<sid>/visibility", methods=["POST"])
+@admin_required
+def admin_story_visibility(sid):
+    """Toggle which sections show to the public. Form: `visible=key1&visible=key2&...`
+    Any SECTION_KEYS not in the form value list end up in `hidden_sections`."""
+    s = storage.load_story(sid)
+    if not s:
+        abort(404)
+    visible_keys = set(request.form.getlist("visible"))
+    s["hidden_sections"] = [k for k in SECTION_KEYS if k not in visible_keys]
+    storage.save_story(sid, s)
+    flash(f"Visibility updated · {len(s['hidden_sections'])} section(s) hidden from public.")
+    return redirect(request.referrer or url_for("admin_review", sid=sid))
+
+
+@app.route("/admin/story/<sid>/visibility/preset", methods=["POST"])
+@admin_required
+def admin_story_visibility_preset(sid):
+    """Apply a one-click preset: 'all', 'minimal', 'reader_only'."""
+    s = storage.load_story(sid)
+    if not s:
+        abort(404)
+    preset = request.form.get("preset", "all")
+    if preset == "all":
+        s["hidden_sections"] = []
+    elif preset == "minimal":
+        # Bare-essentials reading flow only
+        keep = {"into_you", "hook", "world_came_from", "pull_quote",
+                "darkest_moment", "turning_point", "outcome",
+                "comeback_timeline", "share"}
+        s["hidden_sections"] = [k for k in SECTION_KEYS if k not in keep]
+    elif preset == "reader_only":
+        # Story-only — no practices, no CTAs
+        keep = {"into_you", "hook", "world_came_from", "pull_quote",
+                "darkest_moment", "turning_point", "the_grind", "outcome",
+                "comeback_timeline", "lessons"}
+        s["hidden_sections"] = [k for k in SECTION_KEYS if k not in keep]
+    else:
+        flash(f"Unknown preset: {preset}")
+        return redirect(request.referrer or url_for("admin_review", sid=sid))
+    storage.save_story(sid, s)
+    flash(f"Applied preset '{preset}'.")
+    return redirect(request.referrer or url_for("admin_review", sid=sid))
+
+
+# ─── Inline edit story metadata (title/sport/country) ───
+
+@app.route("/admin/story/<sid>/edit", methods=["POST"])
+@admin_required
+def admin_story_edit(sid):
+    s = storage.load_story(sid)
+    if not s:
+        abort(404)
+    name = (request.form.get("athlete_name") or "").strip()
+    sport = (request.form.get("sport") or "").strip()
+    country = (request.form.get("country") or "").strip()
+    headline = (request.form.get("headline") or "").strip()
+    if name:    s["athlete_name"] = name
+    if sport:   s["sport"] = sport
+    if country: s["country"] = country
+    if headline:
+        s.setdefault("sections", {})["headline"] = headline
+    storage.save_story(sid, s)
+    flash(f"Updated metadata for {s['athlete_name']}")
+    return redirect(request.referrer or url_for("admin_home"))
+
+
+# ─── Bulk actions on pending stories ───
+
+@app.route("/admin/bulk", methods=["POST"])
+@admin_required
+def admin_bulk():
+    """Apply an action to many stories at once. Pass `ids=a,b,c` and `action`."""
+    ids = [x.strip() for x in (request.form.get("ids") or "").split(",") if x.strip()]
+    action = (request.form.get("action") or "").strip()
+    if not ids or not action:
+        flash("Pick stories and an action.")
+        return redirect(url_for("admin_home"))
+    done = 0
+    for sid in ids:
+        try:
+            s = storage.load_story(sid)
+        except Exception:
+            continue
+        if not s:
+            continue
+        if action == "approve":
+            s["status"] = "approved"
+            storage.save_story(sid, s)
+            try: publishing_agent.publish(sid)
+            except Exception: pass
+            done += 1
+        elif action == "reject":
+            s["status"] = "rejected"
+            s["reject_reason"] = "bulk-rejected"
+            storage.save_story(sid, s)
+            done += 1
+        elif action == "unpublish":
+            s["status"] = "pending_review"
+            storage.save_story(sid, s)
+            done += 1
+    flash(f"Applied '{action}' to {done} stor{'y' if done == 1 else 'ies'}.")
+    return redirect(url_for("admin_home"))
+
+
+@app.route("/admin/story/<sid>/unpublish", methods=["POST"])
+@admin_required
+def admin_story_unpublish(sid):
+    s = storage.load_story(sid)
+    if not s: abort(404)
+    s["status"] = "pending_review"
+    storage.save_story(sid, s)
+    flash(f"Unpublished {s['athlete_name']}")
+    return redirect(request.referrer or url_for("admin_home"))
+
+
+# ─── Resend welcome email to a subscriber ───
+
+@app.route("/admin/subscribers/resend", methods=["POST"])
+@admin_required
+def admin_subscriber_resend():
+    email = (request.form.get("email") or "").strip().lower()
+    if not email:
+        flash("Email required.")
+        return redirect(url_for("admin_subscribers"))
+    try:
+        subj, html, text = mailer.welcome_email(email)
+        sent = mailer.send_email(email, subj, html, text)
+        flash(f"Welcome email {'sent to' if sent else 'queued (SMTP disabled) for'} {email}.")
+    except Exception as e:
+        flash(f"Resend failed: {e}")
+    return redirect(url_for("admin_subscribers"))
+
+
+# ─── User: saved stories page (powered by localStorage IDs in the browser) ───
+
+@app.route("/saved")
+def saved_page():
+    # No server-side state — the page reads IDs from localStorage and hits /api/stories.json/<id>
+    return render_template("saved.html", site=SITE_NAME, is_admin=_is_admin())
+
+
+@app.route("/api/story/<sid>.json")
+def api_one_story(sid):
+    """Return a compact card payload for one story — used by /saved."""
+    if sid in SEED_STORIES:
+        s = SEED_STORIES[sid]
+    else:
+        try:
+            s = storage.load_story(sid)
+        except FileNotFoundError:
+            return jsonify({"error": "not_found"}), 404
+        if s.get("status") != "published":
+            return jsonify({"error": "not_published"}), 404
+    return jsonify(_card(s))
+
+
+# ─── User: submit an athlete ───
+
+SUBMISSIONS = ROOT / "data" / "submissions"
+SUBMISSIONS.mkdir(parents=True, exist_ok=True)
+
+
+@app.route("/submit")
+def submit_page():
+    return render_template("submit.html", site=SITE_NAME, is_admin=_is_admin())
+
+
+@app.route("/api/submit", methods=["POST"])
+def api_submit():
+    name = (request.form.get("athlete_name") or "").strip()
+    sport = (request.form.get("sport") or "").strip()
+    country = (request.form.get("country") or "").strip()
+    why = (request.form.get("why") or "").strip()
+    email = (request.form.get("email") or "").strip().lower()
+    if not name or len(why) < 30:
+        return jsonify({"ok": False, "error": "Name and a reason (30+ chars) are required."}), 400
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", name.lower()).strip("-")
+    payload = {
+        "athlete_name": name, "sport": sport, "country": country,
+        "why": why, "submitted_by": email,
+        "submitted_at": __import__("datetime").datetime.utcnow().isoformat(),
+    }
+    (SUBMISSIONS / f"{slug}-{int(__import__('time').time())}.json").write_text(
+        _json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return jsonify({"ok": True})
+
+
 @app.route("/admin/jobs.json")
 @admin_required
 def admin_jobs():
@@ -891,7 +1121,40 @@ def admin_jobs():
 @app.route("/media/<path:filename>")
 def media(filename):
     from flask import send_from_directory
-    return send_from_directory(IMAGES, filename)
+    resp = send_from_directory(IMAGES, filename)
+    # Athlete photos rarely change — cache aggressively at the browser & CDN.
+    resp.headers["Cache-Control"] = "public, max-age=2592000, immutable"  # 30 days
+    return resp
+
+
+# ─── Lightweight gzip compression for HTML/JSON responses ───
+@app.after_request
+def _maybe_gzip(resp):
+    try:
+        if (
+            resp.status_code < 200 or resp.status_code >= 300
+            or "Content-Encoding" in resp.headers
+            or resp.direct_passthrough
+        ):
+            return resp
+        accept = request.headers.get("Accept-Encoding", "")
+        if "gzip" not in accept.lower():
+            return resp
+        ct = (resp.headers.get("Content-Type") or "").lower()
+        if not any(ct.startswith(x) for x in ("text/", "application/json", "application/javascript", "application/xml")):
+            return resp
+        data = resp.get_data()
+        if len(data) < 1024:  # not worth compressing tiny payloads
+            return resp
+        import gzip
+        gzipped = gzip.compress(data, compresslevel=6)
+        resp.set_data(gzipped)
+        resp.headers["Content-Encoding"] = "gzip"
+        resp.headers["Content-Length"] = str(len(gzipped))
+        resp.headers["Vary"] = "Accept-Encoding"
+    except Exception:
+        pass
+    return resp
 
 
 # ---------- Admin: edit athlete photo ----------

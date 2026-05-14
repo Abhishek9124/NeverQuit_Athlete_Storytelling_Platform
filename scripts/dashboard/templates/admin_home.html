@@ -174,14 +174,38 @@
       <span class="queue-badge">{{ queue.queue|length }} queued · {{ queue.processed|length }} processed</span>
     </div>
     {% if pending %}
+      {# ─── Bulk action bar — appears only while items are selected ─── #}
+      <div id="bulk-bar" style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#1a1a1a;color:#fff;border-radius:10px;margin-bottom:12px;font-size:13px;">
+        <div><strong id="bulk-count">0</strong> selected · <a href="#" onclick="event.preventDefault();selectAllPending(false)" style="color:#A8A69D;text-decoration:underline;">clear</a></div>
+        <div style="display:flex;gap:6px;">
+          <button onclick="bulkAction('approve')" class="btn btn-green" style="height:32px;font-size:12px;padding:0 14px;">Approve selected</button>
+          <button onclick="bulkAction('reject')"  class="btn btn-red"   style="height:32px;font-size:12px;padding:0 14px;">Reject selected</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600;">
+        <input type="checkbox" id="select-all" onchange="selectAllPending(this.checked)" style="margin:0;">
+        <label for="select-all" style="cursor:pointer;">Select all · {{ pending|length }}</label>
+        <span style="margin-left:auto;">
+          <select id="pending-sort" onchange="sortPending()" style="height:28px;font-size:11px;padding:0 8px;border:1px solid var(--line-strong);background:#fff;">
+            <option value="conf-desc">Confidence ↓</option>
+            <option value="conf-asc">Confidence ↑</option>
+            <option value="name">Name A–Z</option>
+          </select>
+        </span>
+      </div>
+      <div id="pending-list">
       {% for s in pending %}
-      <div class="row">
-        <div class="row-meta">
+      <div class="row pending-row" data-id="{{ s.story_id }}" data-conf="{{ s.confidence_score }}" data-name="{{ s.athlete_name|lower }}">
+        <div class="row-meta" style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap;">
+          <input type="checkbox" class="row-check" data-id="{{ s.story_id }}" onchange="updateBulkBar()" style="margin:0;flex-shrink:0;">
           <a class="row-name" href="/admin/story/{{ s.story_id }}">{{ s.athlete_name }}</a>
           <span class="row-sport">{{ s.sport }}</span>
+          {% if s.country %}<span class="row-sport">{{ flag(s.country) }} {{ s.country }}</span>{% endif %}
           <span class="score {% if s.confidence_score >= 90 %}score-high{% elif s.confidence_score >= 75 %}score-mid{% else %}score-low{% endif %}">{{ s.confidence_score }}%</span>
         </div>
-        <div style="display:flex;gap:6px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <a class="btn btn-ghost" href="/story/{{ s.story_id }}" target="_blank" title="View as visitor">👁</a>
+          <button class="btn btn-ghost" onclick='openEditModal({{ {"id": s.story_id, "name": s.athlete_name, "sport": s.sport or "", "country": s.country or ""} | tojson }})' title="Edit metadata">✏</button>
           <a class="btn btn-ghost" href="/admin/story/{{ s.story_id }}">Review</a>
           <form method="post" action="/admin/story/{{ s.story_id }}/approve" style="display:inline;"><button class="btn btn-green" type="submit">Approve</button></form>
           <form method="post" action="/admin/story/{{ s.story_id }}/reject" style="display:inline;"><button class="btn btn-red" type="submit">Reject</button></form>
@@ -192,6 +216,7 @@
         </div>
       </div>
       {% endfor %}
+      </div>
     {% else %}
       <div class="empty">No stories waiting. Run discovery + pipeline to generate more.</div>
     {% endif %}
@@ -306,5 +331,72 @@ function updateRefreshLabel(){
   el.textContent = hasActiveJob ? `Refreshing in ${countdown}s` : 'Auto-refresh';
 }
 setInterval(tickRefresh, 1000);
+
+// ─── Bulk actions ───
+function selectAllPending(checked){
+  document.querySelectorAll('.row-check').forEach(c => c.checked = checked);
+  document.getElementById('select-all').checked = checked;
+  updateBulkBar();
+}
+function updateBulkBar(){
+  const checked = document.querySelectorAll('.row-check:checked');
+  const bar = document.getElementById('bulk-bar');
+  const cnt = document.getElementById('bulk-count');
+  if (cnt) cnt.textContent = checked.length;
+  if (bar) bar.style.display = checked.length > 0 ? 'flex' : 'none';
+}
+async function bulkAction(action){
+  const ids = [...document.querySelectorAll('.row-check:checked')].map(c => c.dataset.id);
+  if (ids.length === 0) return;
+  const verb = action === 'approve' ? 'approve' : 'reject';
+  if (!confirm(`${verb.toUpperCase()} ${ids.length} ${ids.length === 1 ? 'story' : 'stories'}?`)) return;
+  const fd = new FormData(); fd.append('ids', ids.join(',')); fd.append('action', action);
+  const r = await fetch('/admin/bulk', { method: 'POST', body: fd });
+  location.reload();
+}
+
+// ─── Sort pending list ───
+function sortPending(){
+  const sel = document.getElementById('pending-sort').value;
+  const list = document.getElementById('pending-list');
+  const rows = [...list.querySelectorAll('.pending-row')];
+  rows.sort((a,b)=>{
+    if (sel === 'conf-desc') return Number(b.dataset.conf) - Number(a.dataset.conf);
+    if (sel === 'conf-asc')  return Number(a.dataset.conf) - Number(b.dataset.conf);
+    if (sel === 'name')      return a.dataset.name.localeCompare(b.dataset.name);
+    return 0;
+  });
+  rows.forEach(r => list.appendChild(r));
+}
+
+// ─── Inline metadata edit modal ───
+function openEditModal(data){
+  const m = document.getElementById('edit-modal');
+  m.querySelector('input[name=athlete_name]').value = data.name || '';
+  m.querySelector('input[name=sport]').value = data.sport || '';
+  m.querySelector('input[name=country]').value = data.country || '';
+  m.querySelector('form').action = `/admin/story/${data.id}/edit`;
+  m.style.display = 'flex';
+}
+function closeEditModal(){ document.getElementById('edit-modal').style.display = 'none'; }
 </script>
+
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:90;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+  <form method="post" action="" style="background:#fff;padding:28px;border-radius:14px;width:420px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+    <div style="font-size:16px;font-weight:600;">Edit story metadata</div>
+    <label style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;">Athlete name
+      <input type="text" name="athlete_name" required style="display:block;width:100%;margin-top:4px;">
+    </label>
+    <label style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;">Sport
+      <input type="text" name="sport" style="display:block;width:100%;margin-top:4px;">
+    </label>
+    <label style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;">Country
+      <input type="text" name="country" style="display:block;width:100%;margin-top:4px;">
+    </label>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+      <button type="button" class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+      <button type="submit" class="btn btn-orange">Save</button>
+    </div>
+  </form>
+</div>
 {% endblock %}
