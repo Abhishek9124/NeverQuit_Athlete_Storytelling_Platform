@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from dotenv import load_dotenv
 
-from scripts.utils import gemini_client, storage
+from scripts.utils import nvidia_client as gemini_client, storage
 
 load_dotenv()
 ROOT = Path(__file__).resolve().parents[2]

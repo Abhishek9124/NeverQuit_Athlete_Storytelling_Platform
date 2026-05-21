@@ -70,7 +70,7 @@ control, and multi-channel publishing.
 ## Key Features
 
 ### AI pipeline
-- **Provider-agnostic LLM client** (`nvidia_client.py`) over an OpenAI-compatible API, with legacy aliases so older imports keep working
+- **Single provider-agnostic LLM client** (`nvidia_client.py`) over an OpenAI-compatible API — every agent imports it directly, no duplicate wrappers
 - **Tolerant JSON parsing** — strips markdown fences, repairs malformed model output, retries on rate limits with exponential backoff
 - **Per-agent prompt files** in `prompts/` — research, story writing, QA, and social assets are independently tunable
 - **Optional MCP integration** (`mcp_research.py`) for Model Context Protocol tool-use during research
@@ -257,6 +257,21 @@ waitress-serve --listen=0.0.0.0:5000 wsgi:app
 ```
 
 The app runs as a **single Flask service** serving both the public site and the admin console. See `docs/deployment.md` for platform-specific notes.
+
+### Production readiness checklist
+
+Before going live, confirm:
+
+- [ ] `ADMIN_TOKEN` is set to a strong secret (an empty token leaves admin open)
+- [ ] `FLASK_SECRET` is set to a random string (not the default)
+- [ ] `FLASK_DEBUG` is unset or `0` — debug mode never ships to production
+- [ ] Served via a WSGI server (`waitress` / `gunicorn`), **not** `python wsgi.py`
+- [ ] `NVIDIA_API_KEY` and model env vars are configured
+- [ ] `data/` is on a persistent volume (it holds the SQLite DB, stories, images)
+- [ ] HTTPS terminates at the host/reverse proxy
+- [ ] Optional integration keys (SMTP, Mailchimp, Webflow, Notion) are set only if those features are needed
+
+Already handled in code: debug defaults **off**, optional dependencies **soft-import**, responses **gzip-compressed**, media served with **immutable cache headers**, `/healthz` endpoint for liveness probes, and graceful no-op when integrations are unconfigured.
 
 ---
 
