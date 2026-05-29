@@ -1,38 +1,74 @@
 # NeverQuit — AI-Assisted Athlete Storytelling Platform
 
-> An end-to-end content platform that **researches, writes, fact-checks, and publishes**
-> long-form comeback stories of athletes, Paralympians, and differently-abled
-> individuals — with a human editor in the loop at every step.
+> **Turn one athlete name into a sourced, fact-checked, editorially-reviewed long-form story — in minutes, not weeks.**
 
-NeverQuit pairs a **multi-agent AI pipeline** with a **production Flask web app**.
-The pipeline turns a single athlete name into a sourced research dossier and a
-structured, editorially-reviewed story. The web app serves both a polished public
-reader and a full admin console for review, approval, per-section visibility
-control, and multi-channel publishing.
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.x-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![LLM](https://img.shields.io/badge/LLM-OpenAI--compatible-412991?logo=openai&logoColor=white)](https://platform.openai.com/docs/api-reference)
+[![MCP](https://img.shields.io/badge/MCP-tool--use-D85A30)](https://modelcontextprotocol.io/)
+[![SQLite](https://img.shields.io/badge/SQLite-cached-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](./Dockerfile)
+[![Deploy](https://img.shields.io/badge/Deploy-Render%20%C2%B7%20Fly%20%C2%B7%20Railway-46E3B7)](#deployment)
+[![Status](https://img.shields.io/badge/status-production--ready-22c55e)](#production-readiness-checklist)
 
-> **Demo:** _replace this line with_ `![NeverQuit demo](assets/demo.gif)` _once you've recorded a 20–30 sec capture of the admin pipeline running through human review → approve → publish. ShareX or OBS → compress on ezgif.com → drop into `assets/`._
+A multi-agent AI pipeline + a production Flask web app for telling **comeback stories of athletes, Paralympians, and differently-abled individuals** — with a human editor gating every publish.
 
----
-
-## Why this project is worth a look
-
-| Area | What it demonstrates |
-|---|---|
-| **Multi-agent pipeline** | 6 specialised agents (discover → research → write → QA → publish → social) that hand off in sequence, each with isolated prompts, retries, and graceful degradation |
-| **LLM engineering** | Provider-agnostic client, tolerant JSON parsing, exponential-backoff retries, rate-limit handling, optional MCP tool-use layer |
-| **UI / front-end** | Editorial reading experience — Source Serif 4 + Inter, warm-light & dark themes, story reader with timeline, key-facts, pull-quotes, scroll progress |
-| **Human-in-the-loop design** | Confidence scoring, red-flag surfacing, per-section public-visibility controls, bulk review actions |
-| **Full-stack delivery** | Flask app, SQLite persistence with an in-memory cache layer, gzip middleware, background job runner, SMTP + Mailchimp integration |
-| **Production readiness** | Dockerfile, `render.yaml`, `Procfile`, WSGI entrypoint, health check, env-driven config, optional-dependency soft imports |
+> 🎬 **Demo GIF:** _drop a 20–30 sec capture of the admin pipeline (research → review → approve → publish) into `assets/demo.gif` and replace this line with_ `![NeverQuit demo](assets/demo.gif)`.
 
 ---
 
-## Architecture
+## Architecture at a glance
 
 ![NeverQuit pipeline architecture](assets/architecture.svg)
 
+<sub>6 agents · provider-agnostic LLM client · optional MCP tool-use · human-in-the-loop review · best-effort publish fan-out</sub>
+
+---
+
+## What this project demonstrates
+
+> Framed for engineers, hiring managers, and tech recruiters who read READMEs in <60 seconds.
+
+| Skill | How it shows up in this repo |
+|---|---|
+| **LLM engineering** | Provider-agnostic client (`nvidia_client.py`), tolerant JSON parsing with `json-repair` fallback, exponential-backoff retries via `tenacity`, 429-aware adaptive throttle, bounded concurrency |
+| **Multi-agent orchestration** | 6 specialised agents (discovery → research → writer → QA → social → publish) with isolated prompts, typed output contracts, and graceful per-step degradation — see [Agent Orchestration](#agent-orchestration) |
+| **MCP tool-use** | Official `mcp` Python SDK adapter wired into the research agent — activates the moment `mcp_servers.json` exists (web search · fetch · Wikipedia) |
+| **Human-in-the-loop product design** | 5-axis confidence scoring with weighted fallback, red-flag surfacing, uncertain-fact pinning, per-section visibility toggles, bulk review actions — editors get *signal*, not auto-publish |
+| **Full-stack delivery** | Flask + Jinja editorial UI (Source Serif 4 / Inter), SQLite + JSON dual-write with mtime-keyed in-memory cache, gzip middleware, immutable media caching, background job runner with live progress |
+| **Production readiness** | Dockerfile · `render.yaml` · `Procfile` · WSGI entrypoint · `/healthz` · env-driven config · soft-imported optional integrations (Notion, Supabase, Mailchimp, MCP) so missing services no-op cleanly |
+
+---
+
+## By the numbers
+
+| | |
+|---|---|
+| 🧠 **Specialised agents** | 6 (discovery · research · writer · QA · social · publish) |
+| 📝 **Tunable prompt files** | 4 (independently versionable) |
+| 🐍 **Python** | ~3,600 LOC across pipeline, utilities, and Flask app |
+| 🎨 **Jinja templates** | 11 (editorial reader + 5-page admin console) |
+| 📊 **QA scoring axes** | 5 (factual_consistency · quote_integrity · tone · completeness · cultural_sensitivity) |
+| 📐 **Story template fields** | 18 (hook, darkest_moment, turning_point, comeback_timeline, lessons, pull_quote, goal_box, …) |
+| 🔌 **Optional integrations** | 5 (Webflow · Mailchimp · Notion · Supabase · MCP) — every one soft-imports |
+| 🚀 **Deploy targets ready** | Docker · Render · Fly · Railway · any WSGI host |
+
+---
+
+## Screenshots
+
+> _Drop into `assets/` and replace these placeholders:_
+>
+> | Public reader | Admin review queue | Confidence + red flags |
+> |---|---|---|
+> | `![reader](assets/screenshot-reader.png)` | `![admin](assets/screenshot-admin.png)` | `![qa](assets/screenshot-qa.png)` |
+
+---
+
+## Pipeline flow
+
 <details>
-<summary>ASCII fallback</summary>
+<summary>ASCII flow (text fallback for the diagram above)</summary>
 
 ```
               ┌───────────────────────── AI PIPELINE ─────────────────────────┐
@@ -66,7 +102,7 @@ control, and multi-channel publishing.
 
 </details>
 
-**Pipeline flow:** `discovery → research → write → QA → human approval → publish → social assets`
+**End-to-end:** `discovery → research → write → QA → human approval → publish → social assets`
 
 1. **`discovery_agent`** finds athlete candidates and queues them in `data/athlete_queue.json`.
 2. **`research_agent`** builds a sourced dossier (birth, struggles, turning point, quotes, competitions, outcomes) — mirrored to SQLite, with optional MCP tool-use enrichment.
