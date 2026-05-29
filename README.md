@@ -29,9 +29,10 @@ control, and multi-channel publishing.
 
 ## Architecture
 
-> **Diagram:** _replace this line with_ `![Architecture](assets/architecture.png)` _once you've exported a diagram from draw.io / Excalidraw. Suggested flow:_ `Athlete name → Discovery → Research (+ MCP) → Story Writer → QA (confidence + flags) → Human Review → Publish → Social`.
+![NeverQuit pipeline architecture](assets/architecture.svg)
 
-ASCII fallback:
+<details>
+<summary>ASCII fallback</summary>
 
 ```
               ┌───────────────────────── AI PIPELINE ─────────────────────────┐
@@ -62,6 +63,8 @@ ASCII fallback:
                           │  Webflow · Mailchimp · Notion · Supabase│
                           └─────────────────────────────────────────┘
 ```
+
+</details>
 
 **Pipeline flow:** `discovery → research → write → QA → human approval → publish → social assets`
 

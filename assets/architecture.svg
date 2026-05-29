@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 720" font-family="-apple-system, Segoe UI, Inter, Roboto, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#D85A30"/>
+    </marker>
+    <style>
+      .title { font-size: 22px; font-weight: 700; fill: #0f172a; }
+      .group-label { font-size: 13px; font-weight: 700; fill: #64748b; letter-spacing: 1.5px; }
+      .agent-title { font-size: 14px; font-weight: 700; fill: #0f172a; }
+      .agent-sub { font-size: 11px; fill: #475569; }
+      .step-num { font-size: 11px; font-weight: 700; fill: #D85A30; }
+      .store-title { font-size: 13px; font-weight: 700; fill: #0f172a; }
+      .store-sub { font-size: 11px; fill: #475569; }
+      .edge-label { font-size: 11px; fill: #475569; font-style: italic; }
+      .human-title { font-size: 14px; font-weight: 700; fill: #fff; }
+      .human-sub { font-size: 11px; fill: #fef3ec; }
+    </style>
+  </defs>
+
+  <rect width="1180" height="720" fill="#fafaf7"/>
+
+  <text x="40" y="44" class="title">NeverQuit — AI-Assisted Athlete Storytelling Pipeline</text>
+  <text x="40" y="64" font-size="13" fill="#64748b">Multi-agent pipeline · human-in-the-loop review · provider-agnostic LLM client · optional MCP tool-use</text>
+
+  <!-- INPUT -->
+  <rect x="40" y="100" width="140" height="70" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="110" y="128" text-anchor="middle" class="agent-title">Athlete name</text>
+  <text x="110" y="148" text-anchor="middle" class="agent-sub">+ sport</text>
+  <text x="110" y="162" text-anchor="middle" class="agent-sub">(or queue tick)</text>
+
+  <!-- PIPELINE GROUP -->
+  <rect x="210" y="90" width="730" height="220" rx="14" fill="#fff7f3" stroke="#fcd9c8" stroke-width="1.5"/>
+  <text x="225" y="112" class="group-label">AI PIPELINE</text>
+
+  <!-- Agent 1: discovery -->
+  <rect x="225" y="130" width="160" height="80" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="237" y="148" class="step-num">STEP 1</text>
+  <text x="305" y="166" text-anchor="middle" class="agent-title">discovery_agent</text>
+  <text x="305" y="184" text-anchor="middle" class="agent-sub">Surface athlete</text>
+  <text x="305" y="198" text-anchor="middle" class="agent-sub">candidates</text>
+
+  <!-- Agent 2: research -->
+  <rect x="405" y="130" width="160" height="80" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="417" y="148" class="step-num">STEP 2</text>
+  <text x="485" y="166" text-anchor="middle" class="agent-title">research_agent</text>
+  <text x="485" y="184" text-anchor="middle" class="agent-sub">Build sourced dossier</text>
+  <text x="485" y="198" text-anchor="middle" class="agent-sub">(+ MCP tool-use)</text>
+
+  <!-- Agent 3: writer -->
+  <rect x="585" y="130" width="160" height="80" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="597" y="148" class="step-num">STEP 3</text>
+  <text x="665" y="166" text-anchor="middle" class="agent-title">story_writer_agent</text>
+  <text x="665" y="184" text-anchor="middle" class="agent-sub">18-field structured</text>
+  <text x="665" y="198" text-anchor="middle" class="agent-sub">story</text>
+
+  <!-- Agent 4: QA -->
+  <rect x="765" y="130" width="160" height="80" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="777" y="148" class="step-num">STEP 4</text>
+  <text x="845" y="166" text-anchor="middle" class="agent-title">quality_checker</text>
+  <text x="845" y="184" text-anchor="middle" class="agent-sub">5-axis score, red flags,</text>
+  <text x="845" y="198" text-anchor="middle" class="agent-sub">uncertain facts</text>
+
+  <!-- Pipeline arrows -->
+  <line x1="180" y1="135" x2="220" y2="170" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="385" y1="170" x2="403" y2="170" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="565" y1="170" x2="583" y2="170" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="745" y1="170" x2="763" y2="170" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Storage outputs under pipeline -->
+  <rect x="405" y="230" width="160" height="60" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="485" y="252" text-anchor="middle" class="store-title">dossier.json</text>
+  <text x="485" y="270" text-anchor="middle" class="store-sub">+ SQLite mirror</text>
+
+  <rect x="585" y="230" width="160" height="60" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="665" y="252" text-anchor="middle" class="store-title">story.json</text>
+  <text x="665" y="270" text-anchor="middle" class="store-sub">18 sections</text>
+
+  <rect x="765" y="230" width="160" height="60" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="845" y="252" text-anchor="middle" class="store-title">QA verdict</text>
+  <text x="845" y="270" text-anchor="middle" class="store-sub">confidence + flags</text>
+
+  <line x1="485" y1="210" x2="485" y2="228" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="665" y1="210" x2="665" y2="228" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="845" y1="210" x2="845" y2="228" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- LLM client side note -->
+  <rect x="970" y="130" width="170" height="80" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <text x="1055" y="152" text-anchor="middle" class="agent-title">nvidia_client.py</text>
+  <text x="1055" y="170" text-anchor="middle" class="agent-sub">single LLM entry point</text>
+  <text x="1055" y="184" text-anchor="middle" class="agent-sub">OpenAI-compatible</text>
+  <text x="1055" y="198" text-anchor="middle" class="agent-sub">tolerant JSON · retries</text>
+  <line x1="970" y1="170" x2="930" y2="170" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+  <!-- HUMAN REVIEW -->
+  <rect x="380" y="350" width="420" height="70" rx="14" fill="#D85A30" stroke="#b8431f" stroke-width="1.5"/>
+  <text x="590" y="378" text-anchor="middle" class="human-title">HUMAN REVIEWER · /admin</text>
+  <text x="590" y="398" text-anchor="middle" class="human-sub">reviews confidence, red flags, uncertain facts · approve / reject / re-research</text>
+  <text x="590" y="412" text-anchor="middle" class="human-sub">per-section visibility · bulk actions · inline metadata edit</text>
+
+  <line x1="845" y1="290" x2="800" y2="350" stroke="#D85A30" stroke-width="2" marker-end="url(#arrowAccent)"/>
+  <text x="830" y="325" class="edge-label" fill="#D85A30">queue</text>
+
+  <!-- PUBLISH GROUP -->
+  <rect x="210" y="460" width="730" height="220" rx="14" fill="#f0f7f4" stroke="#cce7d8" stroke-width="1.5"/>
+  <text x="225" y="482" class="group-label">POST-APPROVAL</text>
+
+  <!-- Agent 5: social -->
+  <rect x="240" y="500" width="200" height="80" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="252" y="518" class="step-num">STEP 5</text>
+  <text x="340" y="536" text-anchor="middle" class="agent-title">social_asset_generator</text>
+  <text x="340" y="554" text-anchor="middle" class="agent-sub">share copy + WhatsApp</text>
+  <text x="340" y="568" text-anchor="middle" class="agent-sub">blurbs</text>
+
+  <!-- Agent 6: publishing -->
+  <rect x="470" y="500" width="200" height="80" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="482" y="518" class="step-num">STEP 6</text>
+  <text x="570" y="536" text-anchor="middle" class="agent-title">publishing_agent</text>
+  <text x="570" y="554" text-anchor="middle" class="agent-sub">best-effort fan-out</text>
+  <text x="570" y="568" text-anchor="middle" class="agent-sub">non-blocking</text>
+
+  <!-- Channels -->
+  <rect x="700" y="500" width="210" height="80" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="805" y="522" text-anchor="middle" class="store-title">Channels (opt-in)</text>
+  <text x="805" y="542" text-anchor="middle" class="store-sub">Webflow · Mailchimp</text>
+  <text x="805" y="558" text-anchor="middle" class="store-sub">Notion · Supabase</text>
+  <text x="805" y="572" text-anchor="middle" class="store-sub">+ Flask public site</text>
+
+  <line x1="590" y1="420" x2="340" y2="498" stroke="#D85A30" stroke-width="2" marker-end="url(#arrowAccent)"/>
+  <text x="395" y="460" class="edge-label" fill="#D85A30">approved</text>
+
+  <line x1="440" y1="540" x2="468" y2="540" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="670" y1="540" x2="698" y2="540" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- READER -->
+  <rect x="240" y="610" width="670" height="50" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="575" y="635" text-anchor="middle" class="agent-title">Public reader · /story/&lt;id&gt;  ·  search · bookmarks · submit · newsletter</text>
+  <text x="575" y="652" text-anchor="middle" class="agent-sub">Flask + Jinja · SQLite + JSON dual-write · mtime-keyed cache · gzip · 30-day immutable media</text>
+
+  <line x1="805" y1="580" x2="700" y2="610" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>
