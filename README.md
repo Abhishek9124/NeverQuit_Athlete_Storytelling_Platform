@@ -10,14 +10,17 @@ structured, editorially-reviewed story. The web app serves both a polished publi
 reader and a full admin console for review, approval, per-section visibility
 control, and multi-channel publishing.
 
+> **Demo:** _replace this line with_ `![NeverQuit demo](assets/demo.gif)` _once you've recorded a 20–30 sec capture of the admin pipeline running through human review → approve → publish. ShareX or OBS → compress on ezgif.com → drop into `assets/`._
+
 ---
 
 ## Why this project is worth a look
 
 | Area | What it demonstrates |
 |---|---|
-| **Multi-agent orchestration** | 6 specialised agents (discover → research → write → QA → publish → social) with isolated prompts, retries, and graceful degradation |
-| **LLM engineering** | Provider-agnostic client, tolerant JSON parsing, exponential-backoff retries, rate-limit handling, optional MCP tool-use |
+| **Multi-agent pipeline** | 6 specialised agents (discover → research → write → QA → publish → social) that hand off in sequence, each with isolated prompts, retries, and graceful degradation |
+| **LLM engineering** | Provider-agnostic client, tolerant JSON parsing, exponential-backoff retries, rate-limit handling, optional MCP tool-use layer |
+| **UI / front-end** | Editorial reading experience — Source Serif 4 + Inter, warm-light & dark themes, story reader with timeline, key-facts, pull-quotes, scroll progress |
 | **Human-in-the-loop design** | Confidence scoring, red-flag surfacing, per-section public-visibility controls, bulk review actions |
 | **Full-stack delivery** | Flask app, SQLite persistence with an in-memory cache layer, gzip middleware, background job runner, SMTP + Mailchimp integration |
 | **Production readiness** | Dockerfile, `render.yaml`, `Procfile`, WSGI entrypoint, health check, env-driven config, optional-dependency soft imports |
@@ -26,6 +29,10 @@ control, and multi-channel publishing.
 
 ## Architecture
 
+> **Diagram:** _replace this line with_ `![Architecture](assets/architecture.png)` _once you've exported a diagram from draw.io / Excalidraw. Suggested flow:_ `Athlete name → Discovery → Research (+ MCP) → Story Writer → QA (confidence + flags) → Human Review → Publish → Social`.
+
+ASCII fallback:
+
 ```
               ┌───────────────────────── AI PIPELINE ─────────────────────────┐
               │                                                               │
@@ -33,7 +40,7 @@ control, and multi-channel publishing.
    name       │     │           │            │               │               │
               │     ▼           ▼            ▼               ▼               │
               │  queue.json   dossier      sections     confidence + flags    │
-              │              (SQLite +    (10-section                        │
+              │              (SQLite +    (structured                         │
               │               JSON)        template)                         │
               └───────────────────────────────┬───────────────────────────────┘
                                               │
@@ -67,14 +74,74 @@ control, and multi-channel publishing.
 
 ---
 
+## Agent Orchestration
+
+Six specialised agents hand off in a fixed sequence. Each one is a structured LLM call with an isolated prompt, its own retry/parse logic, and a tightly-typed output contract — so a failure in any single step is contained.
+
+| # | Agent | Role | Input | Output |
+|---|---|---|---|---|
+| 1 | `discovery_agent` | Surface athlete candidates worth profiling | Seed topic / sport / region (or empty queue) | Candidate rows appended to `data/athlete_queue.json` |
+| 2 | `research_agent` | Build a sourced dossier; optionally enrich via **MCP tool-use** (web search, fetch, Wikipedia) | Athlete name + sport | `dossier.json` (birth, struggles, turning point, exact quotes, competitions, outcomes, `uncertain_facts[]`) + SQLite mirror |
+| 3 | `story_writer_agent` | Turn the dossier into an 18-field structured story matching `templates/story_template.json` | Dossier JSON | `story.json` (hook, darkest_moment, turning_point, comeback_timeline, lessons, pull_quote, goal_box, …) |
+| 4 | `quality_checker_agent` | Strict editorial QA — score, flag, gate | Story + dossier | `{ scores, confidence_score, red_flags[], uncertain_facts[], verdict }` |
+| 5 | `social_asset_generator` | Generate share copy + WhatsApp blurbs from the approved story | Approved story | Social asset block on the story record |
+| 6 | `publishing_agent` | Best-effort push to connected channels (Webflow / Mailchimp / Notion / Supabase) | Approved story + asset block | Per-target publish status (any single target can fail without blocking the rest) |
+
+Between steps 4 and 5 sits the **human reviewer** — the admin console surfaces confidence, red flags, and uncertain facts so an editor approves, rejects, or sends back for re-research. Nothing auto-publishes by default.
+
+---
+
+## Confidence Scoring
+
+The quality checker scores every story on **five axes (0–100)** and produces a weighted `confidence_score` the admin UI uses to prioritise the review queue:
+
+| Axis | What it measures |
+|---|---|
+| `factual_consistency` | Every claim is backed by the dossier; no content from `dossier.uncertain_facts` |
+| `quote_integrity` | Every quoted sentence appears verbatim in the dossier's `exact_quotes` (paraphrase-as-quote → automatic 0) |
+| `tone` | Vivid, specific, restrained — no generic motivational filler, no melodrama, correct second-person voice in reader-facing fields |
+| `completeness` | All 18 template fields present with correct cardinality (e.g. `tiny_practices` ×3, `body_protocol` ×4, `lessons` ×3) |
+| `cultural_sensitivity` | Disability described precisely (not euphemistically); no saviour framing |
+
+Alongside the score, the QA agent emits:
+
+- **`red_flags[]`** — `{ section, issue, severity: low|medium|high }` per problem (rendered as pills in the review UI)
+- **`uncertain_facts[]`** — verbatim claims the editor must verify before publishing
+- **`verdict`** — `approve | review | reject` (advisory; the editor has final say)
+
+Defensive layer in code (`quality_checker_agent.py`): if the model omits `confidence_score`, the agent **falls back to the mean of the per-axis scores** so the queue never breaks on a malformed response. The threshold for auto-approve is env-tunable via `AUTO_APPROVE_THRESHOLD`, and stories below `MIN_CONFIDENCE_SCORE` are routed straight to manual review.
+
+---
+
+## Provider-Agnostic LLM Client
+
+`scripts/utils/nvidia_client.py` is the single LLM entry point every agent imports — swapping providers is an env-var change, not a code change.
+
+- **OpenAI-compatible interface** — works with any OpenAI-protocol endpoint (NVIDIA-hosted by default; trivially repointed at OpenAI / Groq / Together / a local vLLM)
+- **Two surface methods** — `complete()` for free text, `complete_json()` for structured output with tolerant parsing (strips markdown fences, repairs trailing commas / smart quotes, falls back to `json-repair`, retries on malformed output)
+- **Per-call model override** — research and story-writing models are configured independently (`NVIDIA_MODEL` and `NVIDIA_STORY_MODEL`), so you can pair a cheap reasoning model with a stronger writer
+- **Resilience built in** — exponential-backoff retry via `tenacity`, thread-safe pacing (`NVIDIA_MIN_INTERVAL_S`), bounded concurrency (`NVIDIA_MAX_CONCURRENT`), 429-aware adaptive throttle that parses "retry in Xs" hints
+- **No client shims** — `claude_client.py` / `gemini_client.py` aliases were removed; every agent imports `nvidia_client` directly
+
+**MCP tool-use layer** — `scripts/utils/mcp_research.py` uses the official Anthropic `mcp` Python SDK (`ClientSession` over stdio) to let the research agent call external tool servers (web search, fetch, Wikipedia). It activates only when `mcp_servers.json` exists — copy `mcp_servers.example.json` to enable. The integration is **wired and dormant** by default so the project boots without the optional dependency.
+
+---
+
 ## Key Features
 
 ### AI pipeline
 - **Single provider-agnostic LLM client** (`nvidia_client.py`) over an OpenAI-compatible API — every agent imports it directly, no duplicate wrappers
 - **Tolerant JSON parsing** — strips markdown fences, repairs malformed model output, retries on rate limits with exponential backoff
 - **Per-agent prompt files** in `prompts/` — research, story writing, QA, and social assets are independently tunable
-- **Optional MCP integration** (`mcp_research.py`) for Model Context Protocol tool-use during research
+- **Optional MCP tool-use** (`mcp_research.py`) — a Model Context Protocol adapter (official `mcp` SDK) that lets the research agent call web-search / fetch / Wikipedia servers. Built and wired in; **dormant until you add `mcp_servers.json`** (copy from `mcp_servers.example.json`).
 - **Independently configurable models** — research and story-writing models set via separate env vars
+
+### User interface
+- **Editorial design system** — Source Serif 4 (headlines, prose) + Inter (UI), warm `#D85A30` accent, hairline borders, soft corners
+- **Light & dark themes** — toggle in the nav, respects `prefers-color-scheme`, persisted to `localStorage`
+- **Long-form story reader** — sticky rail, scroll-progress bar, drop-cap lede, key-facts tiles, pull-quotes, comeback timeline, numbered takeaways, goal box, inline newsletter, "continue reading" rail
+- **Dynamic home** — editorial hero, live stats band, filter chips, featured story, infinite-scroll story grid backed by `/api/stories.json`
+- See `understand_UI.md` for a complete component-by-component UI reference
 
 ### Admin console
 - **Review queue** with confidence scores, QA red flags, and uncertain-fact surfacing
@@ -86,11 +153,11 @@ control, and multi-channel publishing.
 - **Subscriber management** — add, export CSV, resend welcome emails, broadcast updates
 
 ### Public site
-- Responsive home with **live search**, sport filters, and lazy-loaded story cards
-- Distraction-free **story reader** — reading-progress bar, real reading-time estimate, country flags, bookmark/save, highlight-to-share
+- Responsive home with **live search**, sport/type filter chips, and a dynamic story grid
+- Distraction-free **story reader** — reading-progress bar, real reading-time estimate, country flags, bookmark/save, copy-link
 - **`/saved`** — a personal reading list (localStorage, no login required)
 - **`/submit`** — community submission form for suggesting athletes
-- **Newsletter capture** — floating pill, inline CTA, dark-mode toggle
+- **Newsletter capture** — floating pill, inline story CTA, dark newsletter band
 
 ### Engineering
 - **SQLite persistence** with an mtime-keyed in-memory cache layer for `list_stories()`
@@ -182,10 +249,16 @@ scripts/
 ├── dashboard/
 │   ├── app.py              # Flask app — routes, admin console, job runner
 │   ├── seed_stories.py     # demo stories shown before the DB is populated
-│   └── templates/          # Jinja2 templates (public + admin)
+│   └── templates/          # Jinja2 templates (editorial UI)
+│       ├── base.html              # shell — nav, theme, fonts, design tokens
+│       ├── public_home.html       # editorial home — hero, stats, story grid
+│       ├── public_story.html      # wraps the story reader
+│       ├── _story_body.html       # long-form story reader
+│       ├── saved.html · submit.html
+│       └── admin_*.html           # admin console pages
 ├── pipeline/
 │   ├── discovery_agent.py        # finds athlete candidates
-│   ├── research_agent.py         # builds sourced dossiers
+│   ├── research_agent.py         # builds sourced dossiers (+ optional MCP)
 │   ├── story_writer_agent.py     # dossier → structured story
 │   ├── quality_checker_agent.py  # confidence scoring + fact flags
 │   ├── publishing_agent.py       # pushes to external services
@@ -198,10 +271,11 @@ scripts/
     ├── mailer.py           # SMTP welcome emails + broadcasts
     ├── image_fetcher.py    # athlete photo lookup
     ├── country_flags.py    # ISO code + flag helpers
-    └── mcp_research.py     # optional MCP tool-use
+    └── mcp_research.py     # optional MCP tool-use adapter
 prompts/                    # per-agent prompt files
 templates/story_template.json
 docs/                       # architecture, deployment, DB-choice notes
+understand_UI.md            # full UI component reference
 data/                       # SQLite DB, story JSON, images (gitignored)
 ```
 
@@ -288,6 +362,7 @@ Already handled in code: debug defaults **off**, optional dependencies **soft-im
 
 ## Docs
 
+- `understand_UI.md` — complete UI reference (design tokens, components, every page)
 - `docs/pipeline_architecture.md` — agent flow in detail
 - `docs/deployment.md` — platform-specific deploy notes
 - `docs/approval_dashboard_guide.md` — admin console walkthrough
@@ -295,9 +370,12 @@ Already handled in code: debug defaults **off**, optional dependencies **soft-im
 
 ---
 
-## Notes
+## Honest scope notes
 
-- Translation scaffolding exists in the codebase, but the current orchestrator is effectively English-only.
+- **"Agents" = a fixed pipeline, not autonomous agents.** Each agent is a structured LLM call with its own prompt; `run_pipeline.py` orchestrates them in a fixed sequence. They don't self-plan or loop.
+- **MCP is built but dormant.** `mcp_research.py` is fully wired into the research agent, but it only activates when `mcp_servers.json` exists. Out of the box, no story uses MCP — research runs on the LLM alone.
+- **Translation scaffolding exists** but the orchestrator is effectively English-only.
+- **Python 3.10+ required** (the `mcp` SDK and several deps need it). On Python 3.14, install the core deps individually — `supabase` may fail to build there and is optional anyway.
 - If `ADMIN_TOKEN` is empty, the admin interface is open in local development mode.
 
 ---
