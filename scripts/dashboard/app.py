@@ -89,10 +89,41 @@ def _inject_globals():
         "max_tokens": 20000,
     }
 SITE_NAME = "NeverQuit"
+SITE_TAGLINE = "True stories of athletes who refused to quit."
 LANGS = [("en", "English")]
 
 
 # ---------- Helpers ----------
+
+def _site_url() -> str:
+    """Absolute site origin, e.g. https://neverquit.in (no trailing slash).
+    Prefers the SITE_URL env var; falls back to the current request's root."""
+    base = (os.getenv("SITE_URL") or "").strip().rstrip("/")
+    if base:
+        return base
+    try:
+        return request.url_root.rstrip("/")
+    except Exception:
+        return ""
+
+
+def _abs_url(path_or_url: str) -> str:
+    """Turn a relative path (/media/x.jpg) into an absolute URL for OG/RSS tags.
+    Leaves already-absolute http(s) URLs untouched."""
+    u = (path_or_url or "").strip()
+    if not u:
+        return ""
+    if u.startswith("http://") or u.startswith("https://"):
+        return u
+    return _site_url() + ("" if u.startswith("/") else "/") + u
+
+
+def _excerpt(text: str, n: int = 160) -> str:
+    """Collapse whitespace, strip tags, and truncate for meta descriptions."""
+    import re as _re
+    t = _re.sub(r"<[^>]+>", " ", str(text or ""))
+    t = _re.sub(r"\s+", " ", t).strip()
+    return (t[: n - 1].rstrip() + "…") if len(t) > n else t
 
 def _is_admin() -> bool:
     if not ADMIN_TOKEN:
@@ -209,7 +240,8 @@ def _log_request_visit():
     # Only log content pages, skip media/static/admin/api
     if (p.startswith("/media") or p.startswith("/static") or
         p.startswith("/admin") or p.startswith("/api") or
-        p == "/healthz" or p == "/favicon.ico"):
+        p in ("/healthz", "/favicon.ico", "/feed.xml", "/rss",
+              "/sitemap.xml", "/robots.txt")):
         return
     try:
         ip = (request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
@@ -264,6 +296,8 @@ def api_stories():
     q = (request.args.get("q") or "").strip().lower()
     sport = (request.args.get("sport") or "").strip()
     typ = (request.args.get("type") or "").strip()           # athlete | para
+    country = (request.args.get("country") or "").strip()
+    sort = (request.args.get("sort") or "").strip().lower()  # newest | confidence | name
     limit = max(1, min(60, int(request.args.get("limit", "12"))))
     offset = max(0, int(request.args.get("offset", "0")))
 
@@ -279,6 +313,16 @@ def api_stories():
         cards = [c for c in cards if (c.get("sport") or "").lower() == sport.lower()]
     if typ and typ != "all":
         cards = [c for c in cards if (c.get("type") or "") == typ]
+    if country and country != "all":
+        cards = [c for c in cards if (c.get("country") or "").lower() == country.lower()]
+
+    # Sort (default keeps storage order = newest published last → reverse for newest-first)
+    if sort == "name":
+        cards = sorted(cards, key=lambda c: (c.get("athlete_name") or "").lower())
+    elif sort == "confidence":
+        cards = sorted(cards, key=lambda c: c.get("confidence_score") or 0, reverse=True)
+    elif sort == "newest":
+        cards = list(reversed(cards))
 
     total = len(cards)
     page = cards[offset: offset + limit]
@@ -309,10 +353,23 @@ def public_story(sid):
         all_pub = [_card(x) for k, x in SEED_STORIES.items() if k != sid]
     same_sport = [c for c in all_pub if c["sport"].lower() == (s.get("sport") or "").lower()]
     related = (same_sport + [c for c in all_pub if c not in same_sport])[:3]
+
+    # Social-share / SEO metadata for this story (link previews + JSON-LD).
+    sections = s.get("sections") or {}
+    desc = _excerpt(sections.get("hook") or sections.get("into_you") or s.get("pull_quote") or SITE_TAGLINE)
+    meta = {
+        "title": f"{s.get('athlete_name','')} · {SITE_NAME}",
+        "description": desc,
+        "image": _abs_url(s.get("image_url") or (s.get("dossier") or {}).get("image_url") or ""),
+        "url": _abs_url(url_for("public_story", sid=sid)),
+        "type": "article",
+        "athlete": s.get("athlete_name", ""),
+        "sport": s.get("sport", ""),
+    }
     return render_template(
         "public_story.html",
         s=s, sections=s["sections"], lang="en", langs=LANGS, site=SITE_NAME, is_admin=_is_admin(),
-        related=related,
+        related=related, meta=meta,
     )
 
 
@@ -659,8 +716,8 @@ def _research_job(name: str, sport: str, slug: str, model_key: str, model_name: 
     # Quick coverage audit — flag missing critical fields
     required = ["birth", "disability_or_injury", "early_life", "key_struggles",
                 "darkest_moment_scene", "turning_point", "training_habits",
-                "competitions", "exact_quotes", "outcomes",
-                "principle_or_research"]
+                "daily_routine_details", "competitions", "exact_quotes", "outcomes",
+                "ripple_effects", "principle_or_research"]
     missing = [k for k in required if not dossier.get(k)]
     dossier["_coverage_missing"] = missing
     cov_pct = int(100 * (len(required) - len(missing)) / len(required))
@@ -1114,6 +1171,68 @@ def api_submit():
 def admin_jobs():
     with _jobs_lock:
         return jsonify(_jobs)
+
+
+# ---------- SEO / syndication: RSS feed, sitemap, robots ----------
+
+from xml.sax.saxutils import escape as _xml_escape  # noqa: E402
+
+
+@app.route("/feed.xml")
+@app.route("/rss")
+def rss_feed():
+    """RSS 2.0 feed of the most recent published stories."""
+    cards = list(reversed(_all_published_cards()))[:30]
+    base = _site_url()
+    items = []
+    for c in cards:
+        link = _abs_url(url_for("public_story", sid=c["id"]))
+        title = _xml_escape(f'{c["athlete_name"]} — {c.get("sport","")}'.strip(" —"))
+        desc = _xml_escape(_excerpt(c.get("hook") or c.get("pull_quote") or "", 300))
+        img = _abs_url(c.get("image_url") or "")
+        enclosure = f'<enclosure url="{_xml_escape(img)}" type="image/jpeg" />' if img else ""
+        items.append(
+            f"<item><title>{title}</title><link>{link}</link>"
+            f"<guid isPermaLink=\"true\">{link}</guid>"
+            f"<description>{desc}</description>{enclosure}</item>"
+        )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<rss version="2.0"><channel>'
+        f"<title>{_xml_escape(SITE_NAME)}</title>"
+        f"<link>{_xml_escape(base)}</link>"
+        f"<description>{_xml_escape(SITE_TAGLINE)}</description>"
+        "<language>en</language>"
+        + "".join(items)
+        + "</channel></rss>"
+    )
+    return app.response_class(xml, mimetype="application/rss+xml")
+
+
+@app.route("/sitemap.xml")
+def sitemap():
+    """XML sitemap covering static pages + every published story."""
+    base = _site_url()
+    urls = [f"{base}/", f"{base}/saved", f"{base}/submit"]
+    urls += [_abs_url(url_for("public_story", sid=c["id"])) for c in _all_published_cards()]
+    body = "".join(f"<url><loc>{_xml_escape(u)}</loc></url>" for u in urls)
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+           f"{body}</urlset>")
+    return app.response_class(xml, mimetype="application/xml")
+
+
+@app.route("/robots.txt")
+def robots():
+    base = _site_url()
+    txt = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin\n"
+        "Disallow: /api\n"
+        f"Sitemap: {base}/sitemap.xml\n"
+    )
+    return app.response_class(txt, mimetype="text/plain")
 
 
 # ---------- Health ----------

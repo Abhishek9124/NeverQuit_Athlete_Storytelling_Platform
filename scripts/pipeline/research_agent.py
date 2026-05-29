@@ -112,10 +112,12 @@ def run(athlete_name: str, sport: str = "", is_paralympics: bool = False, model_
     # Validation: Check minimum word count in narrative sections
     narrative_fields = [
         parsed.get("early_life", ""),
-        parsed.get("family_background", ""),
-        parsed.get("introduction_to_sport", {}).get("context", "") if isinstance(parsed.get("introduction_to_sport"), dict) else "",
-        parsed.get("disability_or_injury", {}).get("how_it_happened", "") if isinstance(parsed.get("disability_or_injury"), dict) else "",
-        parsed.get("turning_point", {}).get("impact", "") if isinstance(parsed.get("turning_point"), dict) else "",
+        parsed.get("disability_or_injury", "") if isinstance(parsed.get("disability_or_injury"), str) else "",
+        parsed.get("darkest_moment_scene", ""),
+        parsed.get("daily_routine_details", ""),
+        parsed.get("ripple_effects", ""),
+        parsed.get("turning_point", {}).get("what", "") if isinstance(parsed.get("turning_point"), dict) else "",
+        parsed.get("principle_or_research", ""),
     ]
     
     total_narrative_words = sum(len(field.split()) for field in narrative_fields if field)
