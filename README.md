@@ -11,7 +11,9 @@
 [![Deploy](https://img.shields.io/badge/Deploy-Render%20%C2%B7%20Fly%20%C2%B7%20Railway-46E3B7)](#deployment)
 [![Status](https://img.shields.io/badge/status-production--ready-22c55e)](#production-readiness-checklist)
 
-A multi-agent AI pipeline + a production Flask web app for telling **comeback stories of athletes, Paralympians, and differently-abled individuals** — with a human editor gating every publish.
+You type **a name** — say, *Arunima Sinha*. A pipeline of six AI agents fans out: one researches her life into a sourced dossier, another writes an 18-part long-form story, a third fact-checks every quote against the dossier and scores its confidence. A human editor sees the score and the red flags, hits **approve**, and the story goes live on a polished public reader — with a fact-checked link preview ready to share, an RSS entry, and a sitemap row for Google. **Minutes, not weeks.**
+
+It tells the **comeback stories of athletes, Paralympians, and differently-abled individuals** — the people who were told *it's over*, and weren't.
 
 > 🎬 **Demo GIF:** _drop a 20–30 sec capture of the admin pipeline (research → review → approve → publish) into `assets/demo.gif` and replace this line with_ `![NeverQuit demo](assets/demo.gif)`.
 
@@ -27,8 +29,6 @@ A multi-agent AI pipeline + a production Flask web app for telling **comeback st
 
 ## What this project demonstrates
 
-> Framed for engineers, hiring managers, and tech recruiters who read READMEs in <60 seconds.
-
 | Skill | How it shows up in this repo |
 |---|---|
 | **LLM engineering** | Provider-agnostic client (`nvidia_client.py`), tolerant JSON parsing with `json-repair` fallback, exponential-backoff retries via `tenacity`, 429-aware adaptive throttle, bounded concurrency |
@@ -36,6 +36,7 @@ A multi-agent AI pipeline + a production Flask web app for telling **comeback st
 | **MCP tool-use** | Official `mcp` Python SDK adapter wired into the research agent — activates the moment `mcp_servers.json` exists (web search · fetch · Wikipedia) |
 | **Human-in-the-loop product design** | 5-axis confidence scoring with weighted fallback, red-flag surfacing, uncertain-fact pinning, per-section visibility toggles, bulk review actions — editors get *signal*, not auto-publish |
 | **Full-stack delivery** | Flask + Jinja editorial UI (Source Serif 4 / Inter), SQLite + JSON dual-write with mtime-keyed in-memory cache, gzip middleware, immutable media caching, background job runner with live progress |
+| **SEO & distribution** | Open Graph + Twitter Card link previews, JSON-LD `Article` structured data, RSS 2.0 feed, generated `sitemap.xml` and `robots.txt` — stories are shareable and discoverable the moment they publish |
 | **Production readiness** | Dockerfile · `render.yaml` · `Procfile` · WSGI entrypoint · `/healthz` · env-driven config · soft-imported optional integrations (Notion, Supabase, Mailchimp, MCP) so missing services no-op cleanly |
 
 ---
@@ -46,12 +47,39 @@ A multi-agent AI pipeline + a production Flask web app for telling **comeback st
 |---|---|
 | 🧠 **Specialised agents** | 6 (discovery · research · writer · QA · social · publish) |
 | 📝 **Tunable prompt files** | 4 (independently versionable) |
-| 🐍 **Python** | ~3,600 LOC across pipeline, utilities, and Flask app |
+| 🐍 **Python** | ~3,700 LOC across pipeline, utilities, and Flask app |
 | 🎨 **Jinja templates** | 11 (editorial reader + 5-page admin console) |
 | 📊 **QA scoring axes** | 5 (factual_consistency · quote_integrity · tone · completeness · cultural_sensitivity) |
 | 📐 **Story template fields** | 18 (hook, darkest_moment, turning_point, comeback_timeline, lessons, pull_quote, goal_box, …) |
 | 🔌 **Optional integrations** | 5 (Webflow · Mailchimp · Notion · Supabase · MCP) — every one soft-imports |
 | 🚀 **Deploy targets ready** | Docker · Render · Fly · Railway · any WSGI host |
+
+---
+
+## What the pipeline produces
+
+One name in, a structured, fact-checked story out. The quality checker returns a verdict the editor actually uses:
+
+```jsonc
+// quality_checker_agent output (abridged)
+{
+  "scores": {
+    "factual_consistency": 92,
+    "quote_integrity": 100,
+    "tone": 88,
+    "completeness": 95,
+    "cultural_sensitivity": 90
+  },
+  "confidence_score": 93,            // weighted; falls back to the mean if the model omits it
+  "verdict": "approve",              // advisory — the human still decides
+  "red_flags": [
+    { "section": "turning_point", "issue": "Coach's name not in dossier", "severity": "medium" }
+  ],
+  "uncertain_facts": ["Exact date of the 2011 accident is approximate"]
+}
+```
+
+The editor sees this in the review queue, fixes the flagged line (or hits approve), and the story publishes — already wrapped in an Open Graph card and added to the RSS feed and sitemap.
 
 ---
 
@@ -193,7 +221,10 @@ Defensive layer in code (`quality_checker_agent.py`): if the model omits `confid
 
 ### Public site
 - Responsive home with **live search**, sport/type filter chips, and a dynamic story grid
-- Distraction-free **story reader** — reading-progress bar, real reading-time estimate, country flags, bookmark/save, copy-link
+- **Sort & filter API** — `/api/stories.json?sort=newest|confidence|name&country=…&sport=…&type=…` powers the grid without a page reload
+- Distraction-free **story reader** — reading-progress bar, real reading-time estimate, country flags, bookmark/save, copy-link, **related stories**
+- **Rich link previews** — Open Graph + Twitter Cards on every story (fact-checked headline, hook as description, athlete photo) so shares unfurl beautifully on WhatsApp / LinkedIn / X / iMessage
+- **Discoverable by default** — JSON-LD `Article` structured data, an RSS feed at `/feed.xml`, and generated `/sitemap.xml` + `/robots.txt`
 - **`/saved`** — a personal reading list (localStorage, no login required)
 - **`/submit`** — community submission form for suggesting athletes
 - **Newsletter capture** — floating pill, inline story CTA, dark newsletter band
@@ -325,6 +356,8 @@ data/                       # SQLite DB, story JSON, images (gitignored)
 | `/` | Public home — search, filters, story cards |
 | `/story/<id>` | Story reader |
 | `/saved` · `/submit` | Reading list · community submission form |
+| `/api/stories.json` | Search / filter / sort / paginate (powers the home grid) |
+| `/feed.xml` · `/sitemap.xml` · `/robots.txt` | RSS feed · sitemap · crawler rules |
 | `/admin` | Admin console — review queue, pipeline tools, live jobs |
 | `/admin/run-research` · `/admin/run-pipeline` | Trigger pipeline stages |
 | `/admin/subscribers` | Newsletter management + broadcasts |
@@ -347,6 +380,8 @@ Rationale for SQLite over a hosted DB is documented in `docs/database_choice.md`
 ## Environment Variables
 
 **Core** — `NVIDIA_API_KEY`, `NVIDIA_MODEL`, `NVIDIA_STORY_MODEL`, `ADMIN_TOKEN`, `FLASK_SECRET`, `PORT`
+
+**Distribution** — `SITE_URL` (your public origin, e.g. `https://neverquit.in`) so Open Graph images, the RSS feed, and the sitemap emit absolute URLs. Falls back to the request host if unset.
 
 **Pipeline tuning** — `DAILY_STORY_QUOTA`, `MIN_CONFIDENCE_SCORE`, `AUTO_APPROVE_THRESHOLD`, `NVIDIA_MIN_INTERVAL_S`, `NVIDIA_MAX_CONCURRENT`
 
