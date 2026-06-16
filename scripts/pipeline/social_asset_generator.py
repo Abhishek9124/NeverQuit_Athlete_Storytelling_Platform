@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from dotenv import load_dotenv
 
-from scripts.utils import nvidia_client as claude_client
+from scripts.utils import nvidia_client, model_config
 
 load_dotenv()
 ROOT = Path(__file__).resolve().parents[2]
@@ -15,7 +15,11 @@ SYSTEM = "You are a social media editor for sports stories. Punchy, emotionally 
 
 def run(story: dict) -> dict:
     user = PROMPT.replace("{story_json}", json.dumps(story or {}, ensure_ascii=False))
-    out = claude_client.complete_json(SYSTEM, user, max_tokens=20000)
+    cfg = model_config.config_for("social")
+    out = nvidia_client.complete_json(
+        SYSTEM, user, max_tokens=cfg["max_tokens"],
+        enable_reasoning=cfg["reasoning"], model_name=cfg["model"],
+    )
     if isinstance(out, list):
         out = out[0] if out and isinstance(out[0], dict) else {}
     if not isinstance(out, dict):

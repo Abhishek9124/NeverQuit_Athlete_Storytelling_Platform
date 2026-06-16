@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from dotenv import load_dotenv
 
-from scripts.utils import nvidia_client as claude_client
+from scripts.utils import nvidia_client, model_config
 
 load_dotenv()
 ROOT = Path(__file__).resolve().parents[2]
@@ -18,7 +18,11 @@ def run(story: dict, dossier: dict) -> dict:
         PROMPT.replace("{story_json}", json.dumps(story or {}, ensure_ascii=False))
         .replace("{dossier_json}", json.dumps(dossier or {}, ensure_ascii=False))
     )
-    qa = claude_client.complete_json(SYSTEM, user, max_tokens=20000)
+    cfg = model_config.config_for("qa")
+    qa = nvidia_client.complete_json(
+        SYSTEM, user, max_tokens=cfg["max_tokens"],
+        enable_reasoning=cfg["reasoning"], model_name=cfg["model"],
+    )
     if isinstance(qa, list):
         qa = qa[0] if qa and isinstance(qa[0], dict) else {}
     if not isinstance(qa, dict):

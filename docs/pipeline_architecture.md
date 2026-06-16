@@ -29,9 +29,10 @@ queue.json  dossier   sections  langs   confidence              Webflow + Mailch
 ## Model Configuration
 
 The project uses NVIDIA's OpenAI-compatible API through `scripts/utils/nvidia_client.py`.
+Per-role model defaults live in one place: `scripts/utils/model_config.py`.
 
 - `NVIDIA_API_KEY` supplies the API key.
 - `NVIDIA_MODEL` is the default model for research and general agent calls.
-- `NVIDIA_STORY_MODEL=openai/gpt-oss-20b` is used for story writing.
+- `NVIDIA_STORY_MODEL=openai/gpt-oss-120b` is used for story writing.
 
 Costs depend on the selected NVIDIA models and account quota.

@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from dotenv import load_dotenv
 
-from scripts.utils import nvidia_client as client, image_fetcher, mcp_research
+from scripts.utils import nvidia_client as client, image_fetcher, mcp_research, model_config
 
 load_dotenv()
 ROOT = Path(__file__).resolve().parents[2]
@@ -68,16 +68,17 @@ def run(athlete_name: str, sport: str = "", is_paralympics: bool = False, model_
             + mcp_context
         )
     
-    # Request verbose, detailed output optimized for speed
-    # Only enable reasoning for specific models that benefit from it
-    enable_reasoning = model_name and "nemotron" in model_name.lower()
-    
+    # Resolve model + token budget from the central registry; a per-call
+    # model_name override (e.g. from the admin "re-research" tool) wins.
+    cfg = model_config.config_for("research")
+    model_id = model_name or cfg["model"]
+
     raw = client.complete(
-        SYSTEM, 
-        user, 
-        max_tokens=20000,  # Generous limit so the dossier is rich enough for the writer.
-        enable_reasoning=enable_reasoning,  # Reasoning only for Nemotron
-        model_name=model_name  # Allow override of model
+        SYSTEM,
+        user,
+        max_tokens=cfg["max_tokens"],  # Generous limit so the dossier is rich enough for the writer.
+        enable_reasoning=model_config.supports_reasoning(model_id),  # Reasoning iff the model family supports it
+        model_name=model_id,
     )
     
     parsed = client.parse_json(raw)

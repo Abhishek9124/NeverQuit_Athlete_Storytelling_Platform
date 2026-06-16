@@ -1,7 +1,7 @@
 """Shared NVIDIA API client for Nemotron, GPT-OSS, and other models via NVIDIA API.
 
 Model is sourced from .env (NVIDIA_MODEL). Defaults to nvidia/nemotron-3-nano-omni-30b-a3b-reasoning.
-Stories can override this with NVIDIA_STORY_MODEL=openai/gpt-oss-20b.
+Stories can override this with NVIDIA_STORY_MODEL=openai/gpt-oss-120b.
 
 This client uses the OpenAI-compatible interface provided by NVIDIA's API.
 Supports reasoning models with thinking capabilities (enable_thinking).
@@ -17,13 +17,17 @@ import threading as _threading
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential, before_sleep_log
 
+from scripts.utils import model_config
+
 log = logging.getLogger("neverquit.nvidia")
 if not log.handlers:
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s %(levelname)s %(name)s | %(message)s")
 
-# Model from .env with sensible default (Nemotron with reasoning)
-MODEL = os.getenv("NVIDIA_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning")
+# Fallback model when a caller doesn't pass model_name. Agents resolve their own
+# model via model_config; this is just the safety net. Single source of truth:
+# scripts/utils/model_config.py.
+MODEL = model_config.model_for("research")
 
 _client: "OpenAI | None" = None
 

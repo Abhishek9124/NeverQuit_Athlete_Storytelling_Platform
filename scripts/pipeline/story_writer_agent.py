@@ -4,19 +4,18 @@ Uses NVIDIA's openai/gpt-oss-120b exclusively for the highest narrative quality.
 Override only via NVIDIA_STORY_MODEL in .env.
 """
 from __future__ import annotations
-import os
 import json
 from pathlib import Path
 from dotenv import load_dotenv
 
-from scripts.utils import nvidia_client, db
+from scripts.utils import nvidia_client, db, model_config
 
 load_dotenv()
 ROOT = Path(__file__).resolve().parents[2]
 PROMPT = (ROOT / "prompts" / "story_writer_prompt.txt").read_text(encoding="utf-8")
 
-# Stories ALWAYS use gpt-oss-120b unless explicitly overridden in .env.
-STORY_MODEL = os.getenv("NVIDIA_STORY_MODEL", "openai/gpt-oss-120b")
+# Story model is resolved from the central registry (env: NVIDIA_STORY_MODEL).
+STORY_MODEL = model_config.model_for("story")
 
 SYSTEM = (
     "You are NeverQuit's senior story writer. Vivid, specific, restrained prose. "
@@ -55,8 +54,10 @@ def run(dossier: dict, slug: str | None = None) -> dict:
     }
     user = PROMPT.replace("{dossier_json}", json.dumps(safe, ensure_ascii=False))
 
+    cfg = model_config.config_for("story")
     sections = nvidia_client.complete_json(
-        SYSTEM, user, max_tokens=20000, model_name=STORY_MODEL
+        SYSTEM, user, max_tokens=cfg["max_tokens"],
+        enable_reasoning=cfg["reasoning"], model_name=cfg["model"],
     )
 
     if isinstance(sections, list):

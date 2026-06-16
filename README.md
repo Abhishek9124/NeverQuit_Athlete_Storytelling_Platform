@@ -186,6 +186,7 @@ Defensive layer in code (`quality_checker_agent.py`): if the model omits `confid
 
 - **OpenAI-compatible interface** — works with any OpenAI-protocol endpoint (NVIDIA-hosted by default; trivially repointed at OpenAI / Groq / Together / a local vLLM)
 - **Two surface methods** — `complete()` for free text, `complete_json()` for structured output with tolerant parsing (strips markdown fences, repairs trailing commas / smart quotes, falls back to `json-repair`, retries on malformed output)
+- **Central model registry** — `scripts/utils/model_config.py` is the single source of truth: every pipeline role (research · discovery · story · QA · social · translation) maps to a model id, reasoning flag, and token budget in one place, so swapping or adding a model is a one-line change. The client, all six agents, and the admin dashboard read from it
 - **Per-call model override** — research and story-writing models are configured independently (`NVIDIA_MODEL` and `NVIDIA_STORY_MODEL`), so you can pair a cheap reasoning model with a stronger writer
 - **Resilience built in** — exponential-backoff retry via `tenacity`, thread-safe pacing (`NVIDIA_MIN_INTERVAL_S`), bounded concurrency (`NVIDIA_MAX_CONCURRENT`), 429-aware adaptive throttle that parses "retry in Xs" hints
 - **No client shims** — `claude_client.py` / `gemini_client.py` aliases were removed; every agent imports `nvidia_client` directly
@@ -283,7 +284,7 @@ Open **http://localhost:5000** (public site) and **http://localhost:5000/admin**
 
 ```ini
 NVIDIA_API_KEY=your-key-here
-NVIDIA_STORY_MODEL=openai/gpt-oss-20b
+NVIDIA_STORY_MODEL=openai/gpt-oss-120b
 NVIDIA_MODEL=nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
 ADMIN_TOKEN=choose-a-secret     # leave blank for open dev mode
 FLASK_SECRET=any-random-string
@@ -336,6 +337,7 @@ scripts/
 │   └── run_pipeline.py           # end-to-end orchestrator
 └── utils/
     ├── nvidia_client.py    # provider-agnostic LLM client
+    ├── model_config.py     # single source of truth: per-role model registry
     ├── db.py               # SQLite layer
     ├── storage.py          # JSON store + mtime-keyed cache
     ├── mailer.py           # SMTP welcome emails + broadcasts
