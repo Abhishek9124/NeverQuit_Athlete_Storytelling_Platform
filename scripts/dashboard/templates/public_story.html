@@ -13,6 +13,8 @@
 <meta name="twitter:title" content="{{ meta.title }}">
 <meta name="twitter:description" content="{{ meta.description }}">
 {% if meta.image %}<meta name="twitter:image" content="{{ meta.image }}">{% endif %}
+<link rel="stylesheet" href="/static/css/reader.css?v=2">
+{% block reader_extra %}{% endblock %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

@@ -688,6 +688,12 @@ html[data-theme="dark"] .card-img-shell .badge-top {
 .card-admin .adm-btn.danger:hover{background:#FEF2F2;border-color:#9B1C1C;}
 .card-admin .adm-btn.warn{color:#9A6D00;}
 .card-admin .adm-btn.warn:hover{background:#FFFBEB;border-color:#9A6D00;}
+
+/* ── Motion removed: drop decorative looping animations (hover transitions kept) ── */
+*, *::before, *::after{ animation: none !important; }
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
 </style>
 
 {% if showing_examples %}

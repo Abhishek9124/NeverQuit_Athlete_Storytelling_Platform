@@ -1,0 +1,149 @@
+/* ============================================================
+   NeverQuit — Design Tokens (Modern Minimal)
+   Single source of truth for color, type, spacing, radii, shadow.
+   Legacy aliases at the bottom keep not-yet-migrated templates
+   resolving against the new system instead of breaking.
+   ============================================================ */
+
+:root{
+  /* ── Surfaces (near-monochrome) ── */
+  --bg:        #ffffff;
+  --surface:   #fafafa;
+  --surface-2: #f4f4f5;
+  --surface-3: #ececee;
+
+  /* ── Ink ── */
+  --ink:       #18181b;
+  --ink-2:     #52525b;
+  --ink-3:     #a1a1aa;
+
+  /* ── Hairlines ── */
+  --border:    rgba(24,24,27,0.09);
+  --border-2:  rgba(24,24,27,0.16);
+
+  /* ── Brand accent (used sparingly) ── */
+  --accent:        #e0532f;
+  --accent-hover:  #c4431f;
+  --accent-soft:   #fdf1ec;
+  --accent-ink:    #ffffff;
+
+  /* ── Semantic ── */
+  --ok:        #15803d;  --ok-soft:     #f0fdf4;
+  --warn:      #b45309;  --warn-soft:   #fffbeb;
+  --danger:    #b91c1c;  --danger-soft: #fef2f2;
+  --info:      #4338ca;  --info-soft:   #eef2ff;
+
+  /* ── Type ── */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  --text-xs:   12px;
+  --text-sm:   13px;
+  --text-base: 15px;
+  --text-md:   16px;
+  --text-lg:   18px;
+  --text-xl:   22px;
+  --text-2xl:  28px;
+  --text-3xl:  36px;
+  --text-4xl:  46px;
+
+  --leading-tight: 1.15;
+  --leading-snug:  1.35;
+  --leading-base:  1.6;
+  --leading-prose: 1.75;
+
+  /* ── Spacing (4px base) ── */
+  --space-1: 4px;   --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
+  --space-5: 20px;  --space-6: 24px;  --space-8: 32px;  --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px; --space-24: 96px;
+
+  /* ── Radii (restrained) ── */
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-full: 999px;
+
+  /* ── Shadows (borders do most of the work; shadows are subtle) ── */
+  --shadow-sm: 0 1px 2px rgba(24,24,27,0.05);
+  --shadow-md: 0 4px 12px rgba(24,24,27,0.07);
+  --shadow-lg: 0 12px 32px rgba(24,24,27,0.10);
+
+  /* ── Layout ── */
+  --content-max: 1120px;
+  --reading-max: 680px;
+
+  color-scheme: light;
+}
+
+html[data-theme="dark"]{
+  --bg:        #09090b;
+  --surface:   #111113;
+  --surface-2: #18181b;
+  --surface-3: #232327;
+
+  --ink:       #fafafa;
+  --ink-2:     #a1a1aa;
+  --ink-3:     #71717a;
+
+  --border:    rgba(250,250,250,0.10);
+  --border-2:  rgba(250,250,250,0.20);
+
+  --accent:        #f06a43;
+  --accent-hover:  #ff7d57;
+  --accent-soft:   #2a1610;
+
+  --ok-soft:     #0f2417;
+  --warn-soft:   #2a1e08;
+  --danger-soft: #2a1010;
+  --info-soft:   #16162e;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md: 0 4px 14px rgba(0,0,0,0.55);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.6);
+
+  color-scheme: dark;
+}
+
+/* ============================================================
+   LEGACY ALIASES
+   Map the previous token names onto the new system so pages
+   still carrying inline styles (home, saved, submit, admin)
+   keep rendering — now in the Modern Minimal palette.
+   ============================================================ */
+:root, html[data-theme="dark"]{
+  --ink-muted: var(--ink-2);
+  --ink-faint: var(--ink-3);
+  --bg-warm:   var(--surface);
+  --bg-mute:   var(--surface-2);
+  --bg-deep:   var(--surface-3);
+  --bg-elev:   var(--bg);
+  --line:        var(--border);
+  --line-strong: var(--border-2);
+
+  --accent-deep: var(--accent);
+
+  --serif:   var(--font-sans);   /* retire decorative serifs → Inter */
+  --display: var(--font-sans);
+  --sans:    var(--font-sans);
+  --mono:    var(--font-mono);
+
+  --green: var(--ok);  --green-soft: var(--ok-soft);
+  --red:   var(--danger);  --red-soft: var(--danger-soft);
+  --gold-soft: var(--warn-soft);  --gold-deep: var(--warn);
+  --indigo-soft: var(--info-soft);  --indigo-deep: var(--info);
+
+  --shadow-accent: var(--shadow-md);
+
+  /* admin legacy --color-* */
+  --color-text-primary: var(--ink);
+  --color-text-secondary: var(--ink-2);
+  --color-text-tertiary: var(--ink-3);
+  --color-background-primary: var(--bg);
+  --color-background-secondary: var(--surface-2);
+  --color-border-secondary: var(--border-2);
+  --color-border-tertiary: var(--border);
+  --border-radius-md: var(--r-md);
+  --border-radius-lg: var(--r-lg);
+}
