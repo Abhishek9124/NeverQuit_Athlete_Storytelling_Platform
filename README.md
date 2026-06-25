@@ -1,4 +1,4 @@
-# NeverQuit — AI-Assisted Athlete Storytelling Platform
+# MultiAgent LLM — AI-Assisted Athlete Storytelling Platform
 
 > **Turn one athlete name into a sourced, fact-checked, editorially-reviewed long-form story — in minutes, not weeks.**
 
@@ -15,13 +15,13 @@ You type **a name** — say, *Arunima Sinha*. A pipeline of six AI agents fans o
 
 It tells the **comeback stories of athletes, Paralympians, and differently-abled individuals** — the people who were told *it's over*, and weren't.
 
-> 🎬 **Demo GIF:** _drop a 20–30 sec capture of the admin pipeline (research → review → approve → publish) into `assets/demo.gif` and replace this line with_ `![NeverQuit demo](assets/demo.gif)`.
+> 🎬 **Demo GIF:** _drop a 20–30 sec capture of the admin pipeline (research → review → approve → publish) into `assets/demo.gif` and replace this line with_ `![MultiAgent LLM demo](assets/demo.gif)`.
 
 ---
 
 ## Architecture at a glance
 
-![NeverQuit pipeline architecture](assets/architecture.svg)
+![MultiAgent LLM pipeline architecture](assets/architecture.svg)
 
 <sub>6 agents · provider-agnostic LLM client · optional MCP tool-use · human-in-the-loop review · best-effort publish fan-out</sub>
 
@@ -259,8 +259,8 @@ Defensive layer in code (`quality_checker_agent.py`): if the model omits `confid
 
 ```bash
 # 1. Clone
-git clone https://github.com/Abhishek9124/NeverQuit-AI-Assisted-Athlete-Storytelling-Platform.git
-cd NeverQuit-AI-Assisted-Athlete-Storytelling-Platform
+git clone https://github.com/Abhishek9124/MultiAgent LLM-AI-Assisted-Athlete-Storytelling-Platform.git
+cd MultiAgent LLM-AI-Assisted-Athlete-Storytelling-Platform
 
 # 2. Virtual environment
 python -m venv venv
@@ -309,7 +309,7 @@ python scripts/pipeline/run_pipeline.py --quota 1 --dry-run
 ```
 
 Or drive it from the admin console: **`/admin` → Research → enter a name → Write story → Review → Approve**.
-Stories land in `data/stories/` as JSON and mirror to `data/neverquit.sqlite`.
+Stories land in `data/stories/` as JSON and mirror to `data/MultiAgent LLM.sqlite`.
 
 ---
 
@@ -372,7 +372,7 @@ data/                       # SQLite DB, story JSON, images (gitignored)
 A hybrid local model:
 
 - **JSON files** in `data/stories/` and `data/dossiers/` — human-readable backups, source of truth for the cache
-- **SQLite** at `data/neverquit.sqlite` — query-friendly persistence, mirrored on every write
+- **SQLite** at `data/MultiAgent LLM.sqlite` — query-friendly persistence, mirrored on every write
 - **Queue state** in `data/athlete_queue.json`
 
 Rationale for SQLite over a hosted DB is documented in `docs/database_choice.md`.
@@ -383,7 +383,7 @@ Rationale for SQLite over a hosted DB is documented in `docs/database_choice.md`
 
 **Core** — `NVIDIA_API_KEY`, `NVIDIA_MODEL`, `NVIDIA_STORY_MODEL`, `ADMIN_TOKEN`, `FLASK_SECRET`, `PORT`
 
-**Distribution** — `SITE_URL` (your public origin, e.g. `https://neverquit.in`) so Open Graph images, the RSS feed, and the sitemap emit absolute URLs. Falls back to the request host if unset.
+**Distribution** — `SITE_URL` (your public origin, e.g. `https://MultiAgent LLM.in`) so Open Graph images, the RSS feed, and the sitemap emit absolute URLs. Falls back to the request host if unset.
 
 **Pipeline tuning** — `DAILY_STORY_QUOTA`, `MIN_CONFIDENCE_SCORE`, `AUTO_APPROVE_THRESHOLD`, `NVIDIA_MIN_INTERVAL_S`, `NVIDIA_MAX_CONCURRENT`
 
@@ -399,8 +399,8 @@ The repo ships with `Dockerfile`, `render.yaml`, `Procfile`, and `wsgi.py`.
 
 ```bash
 # Docker
-docker build -t neverquit .
-docker run -p 5000:5000 --env-file .env neverquit
+docker build -t MultiAgent LLM .
+docker run -p 5000:5000 --env-file .env MultiAgent LLM
 
 # Any WSGI host
 waitress-serve --listen=0.0.0.0:5000 wsgi:app
